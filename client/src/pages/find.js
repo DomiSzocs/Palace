@@ -1,5 +1,6 @@
 import React from 'react';
 import HomeLink from "@/components/HomeLink";
+import {authenticated} from "@/components/Authenticated";
 
 function Find() {
     return (
@@ -10,4 +11,4 @@ function Find() {
 );
 }
 
-export default Find;
+export default authenticated(Find);

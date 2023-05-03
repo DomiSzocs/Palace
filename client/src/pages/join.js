@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import HomeLink from "@/components/HomeLink";
+import {authenticated} from "@/components/Authenticated";
 
 function Join() {
 
@@ -28,4 +29,4 @@ function Join() {
     );
 }
 
-export default Join;
+export default authenticated(Join);

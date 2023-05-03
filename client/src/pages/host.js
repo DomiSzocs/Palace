@@ -1,5 +1,6 @@
 import React from 'react';
 import HomeLink from "@/components/HomeLink";
+import {authenticated} from "@/components/Authenticated";
 
 function Host() {
     return (
@@ -10,4 +11,4 @@ function Host() {
     );
 }
 
-export default Host;
+export default authenticated(Host);

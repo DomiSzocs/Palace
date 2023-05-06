@@ -1,8 +1,5 @@
 import Link from "next/link";
 import {authenticated} from "@/components/Authenticated";
-import {auth} from "@/firebase/fireBaseConfig";
-import {signOut} from "firebase/auth"
-import {useSignOut} from "react-firebase-hooks/auth";
 import SignOut from "../components/SignOut"
 
 function Home() {

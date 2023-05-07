@@ -18,8 +18,8 @@ io.on('connection', (socket) => {
 
     socket.on('send', (data) => {
         console.log("sending: " + data.message)
-        console.log("sending: " + data.roomId)
-        broadcastIntoRoomWithEvent(socket, data.roomId, 'receive', data);
+        console.log("sending: " + data.room)
+        broadcastIntoRoomWithEvent(socket, data.room, 'receive', data);
     });
 });
 

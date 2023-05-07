@@ -27,7 +27,7 @@ function Host() {
             charset: 'alphanumeric',
             capitalization: 'uppercase'
         });
-        setRoomId(code);
+        setRoomId("ASDF");
     }, []);
 
     useEffect(() => {

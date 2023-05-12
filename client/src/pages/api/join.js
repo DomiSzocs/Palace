@@ -1,10 +1,23 @@
-export default function join(req, res) {
-    if (req.method !== 'POST') {
+export default async function join(req, res) {
+    if (req.method !== 'PUT') {
         res.status(405).json('Method Not Allowed!');
     }
-    const code = req.body.code;
+    const {room, player} = req.body;
 
-    res.status(201).json({resp: code});
+    const response = await fetch(`${process.env.NEXT_PUBLIC_GAME_SERVER}/api/lobbies/${room}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            player
+        }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (response.status === 204) {
+        res.status(204).end();
+    } else {
+        res.status(400).send('Cannot join!');
+    }
 }
 
-//TODO add auth and send to game server

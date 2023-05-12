@@ -1,7 +1,12 @@
-const express = require('express');
+import 'dotenv/config'
+import express from 'express';
+import http from 'http';
+import {Server} from 'socket.io';
+import morgan from 'morgan';
+import lobbyApi from './api/lobbyApi.js'
+
 const app = express();
-const server = require('http').createServer(app);
-const {Server} = require('socket.io');
+const server = http.createServer(app)
 const io = new Server(server, { cors: { origin: 'http://localhost:3000' } });
 
 function broadcastIntoRoomWithEvent (socket, room, ev,  data) {
@@ -22,6 +27,14 @@ io.on('connection', (socket) => {
         broadcastIntoRoomWithEvent(socket, data.room, 'receive', data);
     });
 });
+
+app.use(morgan('tiny'));
+
+app.use(express.json());
+
+app.post('/api/lobbies', lobbyApi);
+
+app.put('/api/lobbies/:room', lobbyApi);
 
 server.listen(3001, () => {
     console.log('Server started on port 3001');

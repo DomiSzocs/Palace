@@ -11,7 +11,8 @@ function Lobby({room}) {
     useEffect(() => {
         if (isSocketInitialized.current) return;
         console.log("Initializing socket...");
-        const localSocket = io('http://localhost:3001');
+        console.log(process.env);
+        const localSocket = io(process.env.NEXT_PUBLIC_GAME_SERVER);
         console.log("Socket:", localSocket);
         setSocket(localSocket);
         isSocketInitialized.current = true;

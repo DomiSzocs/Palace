@@ -2,30 +2,38 @@ import React, { useState } from 'react';
 import HomeLink from "@/components/HomeLink";
 import {authenticated} from "@/components/Authenticated";
 import {useRouter} from "next/router";
+import {auth} from "@/firebase/fireBaseConfig";
 
 function Join() {
 
-    const [code, setCode] = useState('');
+    const [room, setRoom] = useState('');
     const router = useRouter();
 
     const sendCode = async () => {
-        // const response = await fetch('/api/join', {
-        //     method: 'POST',
-        //     body: JSON.stringify({code}),
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     }
-        // });
-        // const data = await response.json();
-        // console.log(data);
-        await router.push(`lobbies/${code}`);
+        const player = {
+            id: auth.currentUser.uid,
+            name: auth.currentUser.displayName
+        }
+        const response = await fetch('/api/join', {
+            method: 'PUT',
+            body: JSON.stringify({room, player}),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status === 204) {
+            await router.push(`lobbies/${room}`);
+        } else {
+            return <p>Cannot join!</p>
+        }
     }
 
     return (
         <>
             <HomeLink/>
             <div>
-                <input type='text' value={code} onChange={(e) => setCode(e.target.value)}/>
+                <input type='text' value={room} onChange={(e) => setRoom(e.target.value)}/>
                 <button onClick={sendCode}>Join</button>
             </div>
         </>

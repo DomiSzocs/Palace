@@ -1,19 +1,32 @@
 import Link from "next/link";
 import {authenticated} from "@/components/Authenticated";
 import SignOut from "../components/SignOut"
-import randomstring from "randomstring";
 import {useRouter} from "next/router";
+import {auth} from "@/firebase/fireBaseConfig";
 
 function Home() {
     const router = useRouter();
 
-    const createLobby = () => {
-        const room = randomstring.generate({
-            length: 6,
-            charset: 'alphanumeric',
-            capitalization: 'uppercase'
+    console.log(auth)
+
+    const createLobby = async () => {
+        const host = {
+            id: auth.currentUser.uid,
+            name: auth.currentUser.displayName
+        }
+
+        const response = await fetch('/api/host', {
+            method: 'POST',
+            body: JSON.stringify({
+                host: host
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
-        router.push(`/lobbies/${room}`).then(() => null);
+
+        const room = await response.json();
+        await router.push(`/lobbies/${room}`);
     }
 
     return (

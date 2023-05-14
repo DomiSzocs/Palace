@@ -1,4 +1,4 @@
-import {collection, doc, getDoc, setDoc} from 'firebase/firestore';
+import {collection, doc, getDoc, getDocs, setDoc, deleteDoc} from 'firebase/firestore';
 import {firestore} from "./fireBaseConfig.js";
 
 export async function getLobbyById(lobbyId) {
@@ -22,7 +22,7 @@ export async function createLobby(room, host) {
 
     const playersRef = collection(lobbyRef, 'players');
     const data = {
-        host: host.name,
+        host: host.id,
         started: false
     };
 
@@ -46,9 +46,45 @@ export async function addPlayerToLobby(lobbyId, player) {
     }
 
     const playerRef = doc(firestore, "lobbies", lobbyId, "players", player.id);
-    const playerData = {
+    const playerData = await getDoc(playerRef);
+
+    if(playerData.exists()) {
+        throw new Error('This player already joined!')
+    }
+
+    const newPlayerData = {
         name: player.name,
     };
-    await setDoc(playerRef, playerData);
+    await setDoc(playerRef, newPlayerData);
     return  playerRef.id
+}
+
+export async function deletePlayerFromLobby(lobbyId, uid) {
+    if (!lobbyId) return;
+    if (!uid) return;
+
+    const lobbyRef = doc(firestore,'lobbies', lobbyId);
+    const lobbyData = await getDoc(lobbyRef);
+
+    if (!lobbyData.exists()) {
+        throw new Error(`Lobby with id ${lobbyId} does not exist`)
+    }
+
+    if (lobbyData.data().started) {
+        throw new Error(`Lobby with id ${lobbyId} already started`)
+    }
+
+    if (lobbyData.data().host === uid) {
+        console.log(`deleting lobby ${lobbyId}...`);
+        const documents = await getDocs(collection(firestore, "lobbies", lobbyId, "players"));
+        documents.forEach((document) => {
+            deleteDoc(document.ref);
+        });
+        await deleteDoc(lobbyRef);
+        return -1;
+    }
+
+    const playerRef = doc(firestore, "lobbies", lobbyId, "players", uid);
+    await deleteDoc(playerRef)
+    return 0;
 }

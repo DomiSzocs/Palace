@@ -4,6 +4,7 @@ import http from 'http';
 import {Server} from 'socket.io';
 import morgan from 'morgan';
 import lobbyApi from './api/lobbyApi.js'
+import {deletePlayerFromLobby} from './firebase/LobbiesDTO.js'
 
 const app = express();
 const server = http.createServer(app)
@@ -15,9 +16,12 @@ function broadcastIntoRoomWithEvent (socket, room, ev,  data) {
 }
 
 io.on('connection', (socket) => {
+    const uid = socket.handshake.query.uid;
+    let lobby = null;
     console.log(socket.id);
     socket.on('join', (data) => {
         console.log(`Joined: ${data}`)
+        lobby = data;
         socket.join(data);
     });
 
@@ -26,6 +30,17 @@ io.on('connection', (socket) => {
         console.log("sending: " + data.room)
         broadcastIntoRoomWithEvent(socket, data.room, 'receive', data);
     });
+
+    socket.on('disconnect', () => {
+        deletePlayerFromLobby(lobby, uid).then((returnValue) => {
+            if (returnValue === -1) {
+                console.log(`${lobby} host left`)
+                socket.to(lobby).emit('host_disconnected');
+                broadcastIntoRoomWithEvent(socket, lobby, 'host_disconnected', null);
+            }
+            console.log(`Socket disconnected with Google ID: ${uid} from ${lobby}`);
+        });
+    })
 });
 
 app.use(morgan('tiny'));

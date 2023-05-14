@@ -7,8 +7,6 @@ import {auth} from "@/firebase/fireBaseConfig";
 function Home() {
     const router = useRouter();
 
-    console.log(auth)
-
     const createLobby = async () => {
         const host = {
             id: auth.currentUser.uid,

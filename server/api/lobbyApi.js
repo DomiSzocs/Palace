@@ -1,5 +1,5 @@
 import express from 'express';
-import {addPlayerToLobby, createLobby} from '../firebase/LobbiesDTO.js';
+import {addPlayerToLobby, createLobby, getLobbyById} from '../firebase/LobbiesDTO.js';
 import randomstring from 'randomstring';
 
 const router = express.Router();
@@ -31,6 +31,20 @@ router.put('/api/lobbies/:room', async (req, res) => {
     try {
         await addPlayerToLobby(room, player);
         res.status(204).end();
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Something went wrong!');
+    }
+});
+
+router.get('/api/lobbies/:room', async (req, res) => {
+    const room = req.params.room;
+    const { player } = req.body;
+    const token = req.headers.authorization;
+
+    try {
+        const data = await getLobbyById(room);
+        res.status(200).send(JSON.stringify(data));
     } catch (error) {
         console.error(error);
         res.status(500).send('Something went wrong!');

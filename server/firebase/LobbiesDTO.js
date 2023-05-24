@@ -60,6 +60,10 @@ export async function addPlayerToLobby(lobbyId, player) {
 }
 
 export async function deletePlayerFromLobby(lobbyId, uid) {
+
+    console.log("deleting....");
+    console.log(uid)
+
     if (!lobbyId) return;
     if (!uid) return;
 

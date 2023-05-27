@@ -1,0 +1,78 @@
+#container {
+  height: 100%;
+  width: 100%;
+  user-select: none;
+  position: fixed;
+  top: calc(50% + 1.5rem);
+  left: 50%;
+  -webkit-transform: translate3d(-50%, -50%, 0);
+  -moz-transform: translate3d(-50%, -50%, 0);
+  -o-transform: translate3d(-50%, -50%, 0);
+  -ms-transform: translate3d(-50%, -50%, 0);
+  transform: translate3d(-50%, -50%, 0);
+}
+
+.card {
+  --width: 3em;
+  --height: calc(var(--width) * 1.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--width);
+  height: var(--height);
+  background-color: white;
+  border-radius: 0.2rem;
+  -webkit-text-stroke: 0.01rem black;
+  cursor: default;
+  padding: 0.1rem;
+  font-size: 0.8rem;
+  position: absolute;
+}
+
+.card.face::before,
+.card.face::after {
+  content: attr(data-value);
+  font-size: .7em;
+  position: absolute;
+  letter-spacing: -0.1em;
+}
+
+.card.face::before {
+  top: 0.2rem;
+  left: 0.2rem;
+}
+
+.card.face::after {
+  bottom: 0.2rem;
+  right: 0.2rem;
+  transform: rotate(180deg);
+}
+
+
+.card.gold {
+  color: gold;
+}
+
+.card.red {
+  color: red;
+}
+
+.card.black {
+  color: black;
+}
+
+.card.back::after {
+  content: 'O';
+}
+
+.card.back .suit {
+  display: none;
+}
+
+.suit {
+  font-size: 1.75em;
+}
+
+.card.back {
+  background-color: gray;
+}

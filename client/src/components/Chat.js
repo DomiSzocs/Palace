@@ -35,12 +35,21 @@ function Chat({socket, room}) {
         inputField.current.value = '';
     }
 
+    const expandChatWindow = () => {
+        chatWindow.current.rows = 10;
+    }
+    const resetChatWindow = () => {
+        chatWindow.current.rows = 2;
+    }
+//onClick={expandChatWindow} onMouseOut={resetChatWindow}
     return (
         <>
             <style>{`input {color:black;}`}</style>
-            <textarea ref={chatWindow} disabled={true} rows="4" cols="50"/>
+            <textarea ref={chatWindow} disabled={true} rows="2" cols="30" />
             <br/>
-            <input ref={inputField} type='text'/>
+            <span onFocus={expandChatWindow} onBlur={resetChatWindow}>
+                <input ref={inputField} type='text' />
+            </span>
             <button onClick={send}>{"<-"}</button>
         </>
     );

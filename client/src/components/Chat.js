@@ -7,12 +7,7 @@ function Chat({socket, room}) {
     const joined = useRef(false);
 
     useEffect(() => {
-        if (!socket) return;
-        console.log(joined);
         if (joined.current) return;
-        console.log("inside ${joined}")
-        console.log(`Joining room ${room}...`);
-        socket.emit('join', room);
         socket.on('receive', (data) => {
             console.log("Received message:", data.message);
             setChat((prevChat) => prevChat +  data.message + '\n');
@@ -41,10 +36,9 @@ function Chat({socket, room}) {
     const resetChatWindow = () => {
         chatWindow.current.rows = 2;
     }
-//onClick={expandChatWindow} onMouseOut={resetChatWindow}
+
     return (
         <>
-            <style>{`input {color:black;}`}</style>
             <textarea ref={chatWindow} disabled={true} rows="2" cols="30" />
             <br/>
             <span onFocus={expandChatWindow} onBlur={resetChatWindow}>

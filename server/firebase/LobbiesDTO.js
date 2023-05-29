@@ -2,14 +2,26 @@ import {collection, doc, getDoc, getDocs, setDoc, deleteDoc} from 'firebase/fire
 import {firestore} from "./fireBaseConfig.js";
 
 export async function getLobbyById(lobbyId) {
+    console.log(lobbyId);
     const lobbyRef = doc(firestore, 'lobbies', lobbyId);
     const lobbyData = await getDoc(lobbyRef);
 
+    const answer = {};
     if (lobbyData.exists()) {
-        return lobbyData.data();
+        answer['data'] = lobbyData.data();
     } else {
         return null;
     }
+
+    answer['players'] = [];
+    const clobbyRef = collection(firestore, 'lobbies', lobbyId, 'players');
+    const clobbyData = await getDocs(clobbyRef);
+    clobbyData.forEach((document) => {
+        console.log(document.data());
+        answer.players.push(document.id);
+    });
+
+    return answer;
 }
 
 export async function createLobby(room, host) {
@@ -23,7 +35,8 @@ export async function createLobby(room, host) {
     const playersRef = collection(lobbyRef, 'players');
     const data = {
         host: host.id,
-        started: false
+        started: false,
+        isPrivate: true
     };
 
     console.log(data);
@@ -91,4 +104,15 @@ export async function deletePlayerFromLobby(lobbyId, uid) {
     const playerRef = doc(firestore, "lobbies", lobbyId, "players", uid);
     await deleteDoc(playerRef)
     return 0;
+}
+
+export async function getHost(room) {
+    const lobbyRef = doc(firestore, 'lobbies', room);
+    const lobbyData = await getDoc(lobbyRef);
+
+    if (lobbyData.exists()) {
+        return lobbyData.data().host;
+    } else {
+        return null;
+    }
 }

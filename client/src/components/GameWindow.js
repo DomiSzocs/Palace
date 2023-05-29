@@ -1,34 +1,40 @@
 import React, {useEffect, useRef, useState} from 'react';
-import Dealer from "@/util/dealer";
+import renderStartingState from "@/util/render";
 
-function GameWindow(props) {
+function GameWindow({socket}) {
     let inited = useRef(false);
     const drawPile = useRef();
     const discardPile = useRef();
     const centralPile = useRef();
 
-    const [dealer, setDealer] = useState(new Dealer(8, 3));
-
     useEffect(() => {
         if (inited.current) return;
-        dealer.deal();
-        drawPile.current.addEventListener('click', draw);
-
+        socket.on('startingState', (state) => {
+            getConfig().then((config) => {
+                renderStartingState(state, config);
+            })
+        });
         inited.current = true;
     }, []);
 
-    const draw = () => {
-        console.log(dealer);
-        const topCard = drawPile.current.children[0];
-        drawPile.current.removeChild(topCard);
-        const chosenCard = dealer.deck.getTopCard().getSide(true);
-        chosenCard.style.top = '40%';
-        chosenCard.style.left = '45%';
-        centralPile.current.appendChild(chosenCard);
-        dealer.deck.cards.pop();
+    const getConfig = async () => {
+        const response = await fetch('/api/config');
+        const {config} = await response.json();
+        return await JSON.parse(config);
+    }
 
-        drawPile.current.removeEventListener('click', draw);
-    };
+    // const draw = () => {
+    //     console.log(dealer);
+    //     const topCard = drawPile.current.children[0];
+    //     drawPile.current.removeChild(topCard);
+    //     const chosenCard = dealer.deck.getTopCard().getSide(true);
+    //     chosenCard.style.top = '40%';
+    //     chosenCard.style.left = '45%';
+    //     centralPile.current.appendChild(chosenCard);
+    //     dealer.deck.cards.pop();
+    //
+    //     drawPile.current.removeEventListener('click', draw);
+    // };
 
     return (
         <div id="container">

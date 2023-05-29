@@ -1,7 +1,6 @@
 #container {
   height: 100%;
   width: 100%;
-  user-select: none;
   position: fixed;
   top: calc(50% + 1.5rem);
   left: 50%;
@@ -75,4 +74,8 @@
 
 .card.back {
   background-color: gray;
+}
+
+#copyMessage {
+  display: none;
 }

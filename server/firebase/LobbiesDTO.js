@@ -1,4 +1,4 @@
-import {collection, doc, getDoc, getDocs, setDoc, deleteDoc} from 'firebase/firestore';
+import {collection, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc} from 'firebase/firestore';
 import {firestore} from "./fireBaseConfig.js";
 
 export async function getLobbyById(lobbyId) {
@@ -8,16 +8,15 @@ export async function getLobbyById(lobbyId) {
 
     const answer = {};
     if (lobbyData.exists()) {
-        answer['data'] = lobbyData.data();
+        answer.data = lobbyData.data();
     } else {
         return null;
     }
 
-    answer['players'] = [];
-    const clobbyRef = collection(firestore, 'lobbies', lobbyId, 'players');
-    const clobbyData = await getDocs(clobbyRef);
-    clobbyData.forEach((document) => {
-        console.log(document.data());
+    answer.players = [];
+    const playersRef = collection(firestore, 'lobbies', lobbyId, 'players');
+    const playersData = await getDocs(playersRef);
+    playersData.forEach((document) => {
         answer.players.push(document.id);
     });
 
@@ -87,10 +86,6 @@ export async function deletePlayerFromLobby(lobbyId, uid) {
         throw new Error(`Lobby with id ${lobbyId} does not exist`)
     }
 
-    if (lobbyData.data().started) {
-        throw new Error(`Lobby with id ${lobbyId} already started`)
-    }
-
     if (lobbyData.data().host === uid) {
         console.log(`deleting lobby ${lobbyId}...`);
         const documents = await getDocs(collection(firestore, "lobbies", lobbyId, "players"));
@@ -115,4 +110,53 @@ export async function getHost(room) {
     } else {
         return null;
     }
+}
+
+export async function playerReady(room) {
+    const lobbyRef = doc(firestore, 'lobbies', room);
+    const lobbyData = await getDoc(lobbyRef);
+
+    if (!lobbyData.exists()) {
+        return null;
+    }
+
+    const updatedPlayersNotReady = lobbyData.data().playersNotReady - 1;
+
+    await updateDoc(lobbyRef, {playersNotReady: updatedPlayersNotReady});
+
+    return updatedPlayersNotReady === 0;
+
+}
+
+export async function updateLobby(room, update) {
+    const lobbyRef = doc(firestore, 'lobbies', room);
+    const lobbyData = await getDoc(lobbyRef);
+
+    if (!lobbyData.exists()) {
+        return null;
+    }
+
+    await updateDoc(lobbyRef, update);
+}
+
+export async function setGameState(room, gameState, started) {
+    const lobbyRef = doc(firestore, 'lobbies', room);
+    const playersNotReady = gameState.players.length;
+    await updateDoc(lobbyRef, {playersNotReady: playersNotReady, started: started, gameState: gameState});
+}
+
+export async function updateGameState(room, gameState) {
+    const lobbyRef = doc(firestore, 'lobbies', room);
+    await updateDoc(lobbyRef, {gameState: gameState});
+}
+
+export async function getGameState(room) {
+    const lobbyRef = doc(firestore, 'lobbies', room);
+    const lobbyData = await getDoc(lobbyRef);
+
+    if (!lobbyData.exists()) {
+        return null;
+    }
+
+    return lobbyData.data().gameState;
 }

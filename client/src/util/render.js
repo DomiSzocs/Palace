@@ -1,9 +1,6 @@
 import {auth} from "@/firebase/fireBaseConfig";
 
-const renderStartingState = (state, config) => {
-    console.log(config);
-    console.log(state);
-
+export const renderStartingState = (state, config, players) => {
     const drawPile = document.getElementById('drawPile');
     const cardHtml = getHtml(null, false);
     cardHtml.style.top = '40%';
@@ -11,33 +8,64 @@ const renderStartingState = (state, config) => {
     drawPile.appendChild(cardHtml);
 
     let playerNumber = 1;
-    state.players.forEach((player) => {
-        console.log(player)
-        if (player.uid === auth.currentUser.uid) {
-            renderHand(player, config[0]);
+    const player = state.players;
+    for (let i = 0; i < player.length; i++) {
+        if (player[i].uid === auth.currentUser.uid) {
+            players.current[player[i].uid] = {
+                localIndex: 0,
+                serverIndex: i
+            };
+            renderHand(player[i], config[0]);
         } else {
-            renderHand(player, config[playerNumber++]);
+            players.current[player[i].uid] = {
+                localIndex: playerNumber,
+                serverIndex: i
+            };
+            renderHand(player[i], config[playerNumber++]);
         }
-    });
+    }
+}
+
+export const reRenderHand = (playerNumber, player, config) => {
+    if (playerNumber !== 0) {
+        const parentDiv = document.getElementById(config.faceUp.targetDiv);
+        parentDiv.innerHTML = "";
+        renderHand(player, config);
+    } else {
+        reRenderThree(player.faceDown, config.faceDown);
+        reRenderThree(player.faceUp, config.faceUp);
+        reRenderThree(player.hand, config.hand);
+    }
 }
 
 const renderHand = (player, config) => {
-    console.log(config);
-    renderThree(player.faceDown, config.faceDown);
-    renderThree(player.faceUp, config.faceUp);
-    renderThree(player.hand, config.hand);
+    renderPile(player.faceDown, config.faceDown);
+    renderPile(player.faceUp, config.faceUp);
+    renderPile(player.hand, config.hand);
 }
 
-const renderThree = (cards, style) => {
+const reRenderThree = (cards, style) => {
+    console.log(style.targetDiv);
+    deleteThree(style.targetDiv);
+    renderPile(cards, style);
+};
+
+const deleteThree = (parentDivId) => {
+    const parentDiv = document.getElementById(parentDivId);
+    parentDiv.innerHTML = "";
+}
+
+const renderPile = (cards, style) => {
     const hand = document.getElementById(style.targetDiv)
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < cards.length; i++) {
         const cardHtml = getHtml(cards[i], style.side);
-        console.log(cardHtml);
         cardHtml.style.top = `${style.top + style.topOffset * i}%`;
         cardHtml.style.left = `${style.left + style.leftOffset * i}%`;
         cardHtml.style.fontSize = `${style.font}rem`;
         cardHtml.style.transform = `rotate(${style.rotate}deg)`;
+        cardHtml.style.zIndex = `${i}`;
+        console.log(cardHtml);
         hand.appendChild(cardHtml);
     }
 };
@@ -92,5 +120,3 @@ const getColor = (card) => {
     }
     return (card.suit === "♥" || card.suit === "♦") ? "red" : "black";
 };
-
-export default renderStartingState;

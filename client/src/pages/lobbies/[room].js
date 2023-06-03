@@ -7,7 +7,7 @@ import {auth} from "@/firebase/fireBaseConfig";
 import {useRouter} from "next/router";
 import GameWindow from "@/components/GameWindow";
 
-function Lobby({room, config}) {
+function Lobby({room}) {
     const [socket, setSocket] = useState(null);
     const [isGameStarted, setIsGameStarted] = useState(false);
     const [isHost, setIsHost] = useState(false);
@@ -97,7 +97,7 @@ function Lobby({room, config}) {
         if (!socket) return;
         if (!isGameStarted) return;
 
-        return <GameWindow socket={socket} config={config}/>;
+        return <GameWindow socket={socket} room={room}/>;
     };
 
     return (

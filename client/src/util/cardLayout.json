@@ -2,7 +2,7 @@
   {
     "faceDown": {
       "drawPile": "drawPile",
-      "targetDiv": "hand",
+      "targetDiv": "faceDown",
       "left": 45,
       "leftOffset": 3,
       "top": 68,
@@ -13,7 +13,7 @@
     },
     "faceUp": {
       "drawPile": "drawPile",
-      "targetDiv": "hand",
+      "targetDiv": "faceUp",
       "left": 45,
       "leftOffset": 3,
       "top": 66,

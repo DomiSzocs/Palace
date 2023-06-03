@@ -4,8 +4,9 @@ import http from 'http';
 import {Server} from 'socket.io';
 import morgan from 'morgan';
 import lobbyApi from './api/lobbyApi.js'
-import {deletePlayerFromLobby, getHost, getLobbyById} from './firebase/LobbiesDTO.js'
+import {deletePlayerFromLobby, getHost, getLobbyById, setGameState, updateLobby} from './firebase/LobbiesDTO.js'
 import Dealer from './util/dealer.js';
+import {swapCards} from "./util/playerActions.js";
 
 console.log(process.env.CLIENT_APP);
 
@@ -69,29 +70,135 @@ io.on('connection', (socket) => {
         console.log(users[2].userId);
         socket.to(users[0].userID).emit('receive', {message:"privi", room:"idk"})
         socket.to(users[2].userID).emit('receive', {message:"privi", room:"idk"})
-        // socket.to(socket.lobby).emit('receive', {message:"privi", room:"idk"});
     });
 
-    socket.on('gameStart', ({room, config}) => {
-        getLobbyById(room)
-            .then((data) => {
-                const gameState = buildGameState(data, config);
-                broadcastIntoRoomWithEvent(socket, room, 'starting...', null);
-                broadcastIntoRoomWithEvent(socket, room, 'startingState', gameState);
-            })
-            .catch(error => console.log(error));
+    socket.on('gameStart', async ({room, config}) => {
+        try {
+            const data = await getLobbyById(room);
+            const gameState = buildGameState(data, config);
+            broadcastIntoRoomWithEvent(socket, room, 'starting...', null);
+            broadcastIntoRoomWithEvent(socket, room, 'startingState', gameState);
+            await setGameState(room, gameState, true);
+        } catch(error) {
+            console.log(error);
+        }
+    });
+
+    socket.on('playerAction', async (req) => {
+        switch (req.action) {
+            case 'swap': {
+                const state = {
+                    playerNumber: req.serverIndex,
+                    hand: req.hand,
+                    faceUp: req.faceUp
+                }
+                const newState = await swapCards(req.room, state);
+                const res = {player: req.uid, hand: newState};
+                broadcastIntoRoomWithEvent(socket, req.room, 'updateHand', res);
+                break;
+            }
+            default: {
+                socket.emit('incorrectAction');
+            }
+        }
+    });
+
+    socket.on('ready', async ({room, uid}) => {
+        const lobbyData = await getLobbyById(room);
+        const update = {};
+        if (lobbyData.data.playersNotReady === 1) {
+            const firstPlayer = getFirstPlayer(lobbyData.data.gameState.players);
+            update.gameState = lobbyData.data.gameState;
+            update.gameState.nextPlayer = firstPlayer;
+            console.log(`first player: ${firstPlayer}`);
+            broadcastIntoRoomWithEvent(socket, room, 'nextPlayer', firstPlayer);
+        }
+
+        update.playersNotReady = lobbyData.data.playersNotReady - 1;
+        await updateLobby(room, update);
     });
 });
 
+const getFirstPlayer = (players) => {
+    const hands = []
+    for(let i = 0; i < players.length; i++) {
+        const sorted = players[i].hand.sort(sortCards);
+        hands.push({
+            best: sorted[0].rank,
+            second: sorted[1].rank,
+            third: sorted[2].rank,
+            player: i
+        });
+    }
+    hands.sort(sortHands);
+    return hands[0].player;
+};
+
+const sortHands = (a, b) => {
+    if (a.best < b.best) {
+        return -1;
+    }
+
+    if (a.best > b.best) {
+        return 1;
+    }
+
+    if (a.second < b.second) {
+        return -1;
+    }
+
+    if (a.second > b.second) {
+        return 1;
+    }
+
+    if (a.third < b.third) {
+        return -1;
+    }
+
+    if (a.third > b.third) {
+        return 1;
+    }
+
+    if (a.player > b.player) {
+        return -1;
+    }
+
+    if (a.player >= b.player) {
+        return 1;
+    }
+}
+
+const sortCards = (a, b) => {
+    const cardValues = {'3': 0, '4': 1, '5': 2, '6': 3, '7': 4, '8': 5, '9': 6, 'J': 7, 'Q': 8, 'K': 9, 'A': 10, '2': 11, '10': 12, 'JOKER': 13};
+
+    return cardValues[a.rank] < cardValues[b.rank] ? -1 : 1;
+}
+
+const cardToObject = (card) => {
+    return {
+        suit: card.suit,
+        rank: card.rank
+    };
+};
+
 const buildGameState = (data, config) => {
-    console.log(data);
-    console.log(config);
     const dealer = new Dealer(data.players, config.numberOfDeck);
     const players = dealer.deal();
+
+    const drawingPile = dealer.deck.cards.map(cardToObject);
+
+    const playersStates = players.map((player) => {
+        return {
+            faceDown: player.faceDown.map(cardToObject),
+            faceUp: player.faceUp.map(cardToObject),
+            hand: player.hand.map(cardToObject),
+            uid: player.uid
+        };
+    });
+
     return {
-        players: players,
-        host: data.host,
-        drawingPile: dealer.deck,
+        players: playersStates,
+        drawingPile: drawingPile,
         centralPile: []
     };
 }

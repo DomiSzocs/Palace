@@ -1,152 +1,94 @@
 import React, {useEffect, useRef} from 'react';
 import {renderStartingState, reRenderHand} from "@/util/render";
 import {auth} from "@/firebase/fireBaseConfig";
+import Dealer from "@/util/dealer";
+import {addListenersForSwapPhase, getSwapHandler, removeSwapPhaseEventListeners} from "@/util/eventListeners";
 
 function GameWindow({socket, room}) {
     let inited = useRef(false);
-    const drawPile = useRef();
-    const discardPile = useRef();
-    const centralPile = useRef();
-    const chosenFromHand = useRef(null);
-    const chosenFromFront = useRef(null);
-    const config = useRef(null);
+    const chosenFromHand = useRef([]);
+    const chosenFromFaceUp = useRef([]);
     const players = useRef({});
     const uid = useRef(auth.currentUser.uid)
+    const swapHandler = useRef(getSwapHandler(chosenFromHand, chosenFromFaceUp))
 
     useEffect(() => {
         if (inited.current) return;
         socket.on('startingState', (state) => {
-            getConfig().then((data) => {
-                renderStartingState(state, data, players);
-                addListenersForSwapPhase();
-                config.current = data;
-            })
+            renderStartingState(state, players);
+            addListenersForSwapPhase(swapHandler.current);
+            // const dealer = new Dealer(8, 3);
+            // const playersStates = dealer.deal();
+            // playersStates[0].uid = uid.current
+            // renderStartingState({players:playersStates}, players);
+            // addListenersForSwapPhase(swapHandler.current);
         });
 
         socket.on('updateHand', ({player, hand}) => {
             const playerNumber = players.current[player].localIndex;
-            reRenderHand(playerNumber, hand, config.current[playerNumber]);
+            reRenderHand(playerNumber, hand);
+        })
+
+        socket.on('nextPlayer', (playerIndex) => {
+            console.log(playerIndex);
         })
         inited.current = true;
     }, []);
 
-    const addListenersForSwapPhase = () => {
-      const faceUp = document.getElementById('faceUp');
-      const hand = document.getElementById('hand');
-
-      faceUp.addEventListener('click', chooseToSwap);
-      hand.addEventListener('click', chooseToSwap);
-    };
-
-    const removeSwapPhaseEventListeners = () => {
-        const faceUp = document.getElementById('faceUp');
-        const hand = document.getElementById('hand');
-
-        faceUp.removeEventListener('click', chooseToSwap);
-        hand.removeEventListener('click', chooseToSwap);
-    };
-
-    const chooseToSwap = (element) => {
-        const card = getClickedCard(element.target);
-        if (card.parentElement.id === 'hand') {
-            chooseCard(card, card.parentElement, chosenFromHand);
-        } else {
-            chooseCard(card, card.parentElement, chosenFromFront);
-        }
-
-    }
-
-    const getClickedCard = (clicked) => {
-        if (clicked.classList[0] === 'suit') {
-            return clicked.parentElement;
-        }
-        return clicked;
-    }
-
-    const chooseCard = (card, parent, container) => {
-        const cards = Array.from(parent.children);
-        const clicked = cards.indexOf(card);
-
-        if (container.current === clicked) {
-            unmark(card, parent.id, container);
-            return;
-        }
-
-        if (container.current) return;
-
-        mark(card, clicked, parent.id, container);
-    };
-
-    const mark = (card, cardIndex, id, container) => {
-        card.style.top = `${config.current[0][id].top - 2}%`
-        container.current = cardIndex;
-    }
-
-    const unmark = (card, id, container) => {
-        card.style.top = `${config.current[0][id].top}%`
-        container.current = null;
-    }
-
     const swap = () => {
-        if (chosenFromHand.current === null) return;
-        if (chosenFromFront.current === null) return;
+        if (!chosenFromHand.current.length) return;
+        if (!chosenFromFaceUp.current.length) return;
 
         const req = {
             action: 'swap',
             serverIndex: players.current[uid.current].serverIndex,
             uid: uid.current,
-            hand: chosenFromHand.current,
-            faceUp: chosenFromFront.current,
+            hand: chosenFromHand.current[0],
+            faceUp: chosenFromFaceUp.current[0],
             room
         }
+            // const hand = document.getElementById('localPlayerHand');
+            // const faceUp = document.getElementById('0').children[1];
+            // const handCards = [];
+            // for (let i = 0; i < 3; i++) {
+            //     handCards.push({rank: hand.children[i].dataset.value[0], suit: hand.children[i].dataset.value[2]});
+            // }
+            // const faceUpCards = [];
+            // for (let i = 0; i < 3; i++) {
+            //     faceUpCards.push({rank: faceUp.children[i].dataset.value[0], suit: faceUp.children[i].dataset.value[2]});
+            // }
+            // const temp = faceUpCards[chosenFromFaceUp.current[0]];
+            // faceUpCards[chosenFromFaceUp.current[0]] = handCards[chosenFromHand.current[0]];
+            // handCards[chosenFromHand.current[0]] = temp;
+            // const faceDownCards = [{rank: 'A', suit: '♥'}, {rank: 'A', suit: '♥'}, {rank: 'A', suit: '♥'}];
+            // const handasd = {
+            //     faceUp: faceUpCards,
+            //     faceDown: faceDownCards,
+            //     hand: handCards
+            // }
+            //
+            //reRenderHand(0, handasd);
+
         socket.emit('playerAction', req);
-        chosenFromFront.current = null;
-        chosenFromHand.current = null;
+        chosenFromFaceUp.current = [];
+        chosenFromHand.current = [];
     };
 
     const sendReady = () => {
-        socket.emit('ready', {room, uid:uid.current})
-        removeSwapPhaseEventListeners();
+        socket.emit('ready', {room, uid:uid.current});
+        removeSwapPhaseEventListeners(swapHandler.current);
         document.getElementById("readyButton").style.display = 'none';
         document.getElementById("swapButton").style.display = 'none';
+
+        // const nextPlayer = document.getElementById('2');
+        // nextPlayer.classList.add('current');
     }
-
-    const getConfig = async () => {
-        const response = await fetch('/api/config');
-        const {config} = await response.json();
-        return await JSON.parse(config);
-    };
-
-    // const draw = () => {
-    //     console.log(dealer);
-    //     const topCard = drawPile.current.children[0];
-    //     drawPile.current.removeChild(topCard);
-    //     const chosenCard = dealer.deck.getTopCard().getSide(true);
-    //     chosenCard.style.top = '40%';
-    //     chosenCard.style.left = '45%';
-    //     centralPile.current.appendChild(chosenCard);
-    //     dealer.deck.cards.pop();
-    //
-    //     drawPile.current.removeEventListener('click', draw);
-    // };
 
     return (
         <div id="container">
-            <div ref={centralPile} id="centralPile"></div>
-            <div ref={drawPile} id="drawPile"></div>
-            <div ref={discardPile} id="discardPile"></div>
-            <div id="player">
-                <div id="faceDown"></div>
-                <div id="faceUp"></div>
-                <div id="hand"></div>
-            </div>
-            <div id="player1"></div>
-            <div id="player2"></div>
-            <div id="player3"></div>
-            <div id="player4"></div>
-            <div id="player5"></div>
-            <div id="player6"></div>
-            <div id="player7"></div>
+            <div id="centralPile"></div>
+            <div id="drawPile"></div>
+            <div id="discardPile"></div>
             <button id="swapButton" onClick={swap} >Swap</button>
             <button id="readyButton" onClick={sendReady}>Ready</button>
             <button id="playButton">Play Cards</button>

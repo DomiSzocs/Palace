@@ -1,6 +1,6 @@
 import {auth} from "@/firebase/fireBaseConfig";
 
-export const renderStartingState = (state, config, players) => {
+export const renderStartingState = (state, players) => {
     const drawPile = document.getElementById('drawPile');
     const cardHtml = getHtml(null, false);
     cardHtml.style.top = '40%';
@@ -15,58 +15,82 @@ export const renderStartingState = (state, config, players) => {
                 localIndex: 0,
                 serverIndex: i
             };
-            renderHand(player[i], config[0]);
+            renderLocalPlayersHand(player[i].hand);
         } else {
             players.current[player[i].uid] = {
-                localIndex: playerNumber,
+                localIndex: playerNumber++,
                 serverIndex: i
             };
-            renderHand(player[i], config[playerNumber++]);
+
         }
+        renderPlayer(player[i], players.current[player[i].uid].localIndex);
     }
 }
 
-export const reRenderHand = (playerNumber, player, config) => {
-    if (playerNumber !== 0) {
-        const parentDiv = document.getElementById(config.faceUp.targetDiv);
-        parentDiv.innerHTML = "";
-        renderHand(player, config);
-    } else {
-        reRenderThree(player.faceDown, config.faceDown);
-        reRenderThree(player.faceUp, config.faceUp);
-        reRenderThree(player.hand, config.hand);
+export const reRenderHand = (playerNumber, hand) => {
+    if (playerNumber === 0) {
+        const localPlayersHand = document.getElementById('localPlayerHand');
+        localPlayersHand.innerHTML = '';
+        renderPile(hand.hand, true, localPlayersHand);
     }
+
+    clearHand(playerNumber);
+    renderHand(hand, playerNumber)
 }
 
-const renderHand = (player, config) => {
-    renderPile(player.faceDown, config.faceDown);
-    renderPile(player.faceUp, config.faceUp);
-    renderPile(player.hand, config.hand);
+const renderPlayer = (hand, playerNumber) => {
+    createHandHtml(playerNumber);
+    renderHand(hand, playerNumber);
 }
 
-const reRenderThree = (cards, style) => {
-    console.log(style.targetDiv);
-    deleteThree(style.targetDiv);
-    renderPile(cards, style);
+const renderHand = (hand, playerNumber) => {
+    const playerDiv = document.getElementById(playerNumber);
+    renderPile(hand.faceDown, false, playerDiv.children[0]);
+    renderPile(hand.faceUp, true, playerDiv.children[1]);
+    renderPile(hand.hand, false, playerDiv.children[2]);
+}
+
+const createHandHtml = (playerNumber) => {
+    const container = document.getElementById('container');
+    const baseDiv = document.createElement('div');
+    baseDiv.id = playerNumber;
+    baseDiv.classList.add('playerCards');
+
+    const faceDownDiv = document.createElement('div');
+    faceDownDiv.classList.add('faceDown');
+
+    const faceUpDiv = document.createElement('div');
+    faceUpDiv.classList.add('faceUp');
+
+    const handDiv = document.createElement('div');
+    handDiv.classList.add('hand');
+
+    baseDiv.appendChild(faceDownDiv);
+    baseDiv.appendChild(faceUpDiv);
+    baseDiv.appendChild(handDiv);
+    container.appendChild(baseDiv);
+}
+
+const renderLocalPlayersHand = (cards) => {
+    const handPile = document.createElement('div');
+    handPile.id = 'localPlayerHand';
+    const container = document.getElementById('container');
+    container.appendChild(handPile);
+    renderPile(cards, true, handPile);
+}
+
+const clearHand = (playerNumber) => {
+    const playerDiv = document.getElementById(playerNumber);
+    playerDiv.children[0].innerHTML = '';
+    playerDiv.children[1].innerHTML = '';
+    playerDiv.children[2].innerHTML = '';
 };
 
-const deleteThree = (parentDivId) => {
-    const parentDiv = document.getElementById(parentDivId);
-    parentDiv.innerHTML = "";
-}
-
-const renderPile = (cards, style) => {
-    const hand = document.getElementById(style.targetDiv)
-
+const renderPile = (cards, side, targetPile) => {
     for (let i = 0; i < cards.length; i++) {
-        const cardHtml = getHtml(cards[i], style.side);
-        cardHtml.style.top = `${style.top + style.topOffset * i}%`;
-        cardHtml.style.left = `${style.left + style.leftOffset * i}%`;
-        cardHtml.style.fontSize = `${style.font}rem`;
-        cardHtml.style.transform = `rotate(${style.rotate}deg)`;
-        cardHtml.style.zIndex = `${i}`;
-        console.log(cardHtml);
-        hand.appendChild(cardHtml);
+        const cardHtml = getHtml(cards[i], side);
+        cardHtml.style.setProperty('--n', i);
+        targetPile.appendChild(cardHtml);
     }
 };
 

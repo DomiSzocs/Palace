@@ -76,3 +76,19 @@ input {
 #sortButton {
   display: none;
 }
+
+#swapButton,
+#playButton {
+  position: relative;
+  left: 83%;
+  top: 85%;
+  z-index: 4;
+}
+
+#readyButton,
+#sortButton {
+  position: relative;
+  left: 85%;
+  top: 85%;
+  z-index: 4;
+}

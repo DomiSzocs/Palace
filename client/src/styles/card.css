@@ -11,14 +11,15 @@
   transform: translate3d(-50%, -50%, 0);
 }
 
+
 .card {
   --width: 3em;
   --height: calc(var(--width) * 1.4);
+  width: var(--width);
+  height: var(--height);
   display: flex;
   justify-content: center;
   align-items: center;
-  width: var(--width);
-  height: var(--height);
   background-color: white;
   border-radius: 0.2rem;
   -webkit-text-stroke: 0.01rem black;
@@ -26,6 +27,111 @@
   padding: 0.1rem;
   font-size: 0.8rem;
   position: absolute;
+}
+
+#localPlayerHand {
+  position: fixed;
+  width: 80%;
+  height: 15%;
+  top: 75%;
+  left: 25%;
+}
+
+.playerCards {
+  width: 15vw;
+  height: 20vh;
+  position: absolute;
+}
+
+[id='0']{
+  top: 60%;
+  left: 40%;
+}
+
+#localPlayerHand .card:nth-child(n) {
+  --width: 5em;
+  --height: calc(var(--width) * 1.4);
+  width: var(--width);
+  height: var(--height);
+  left: calc( var(--n) * 3vw + 3.3vw);
+}
+
+.current .hand .card:nth-child(3){
+  outline: 4px solid gold;
+}
+
+[id='0'] .card.marked {
+  top: -1.5vh;
+}
+
+#localPlayerHand .card.marked {
+  top: -2vh;
+}
+
+[id='1'] {
+  top: 35%;
+  transform: rotate(90deg);
+}
+
+[id='2'] {
+  top: 1%;
+  left: 10%;
+  transform: rotate(180deg);
+}
+
+[id='3'] {
+  top: 1%;
+  left: 25%;
+  transform: rotate(180deg);
+}
+
+[id='4'] {
+  top: 1%;
+  left: 40%;
+  transform: rotate(180deg);
+}
+
+[id='5'] {
+  top: 1%;
+  left: 55%;
+  transform: rotate(180deg);
+}
+
+[id='6'] {
+  top: 1%;
+  left: 70%;
+  transform: rotate(180deg);
+}
+
+[id='7'] {
+  top: 35%;
+  left: 85%;
+  transform: rotate(-90deg);
+}
+
+.hand {
+  position: absolute;
+  transform: rotate(90deg);
+  top: 50%;
+  left: 9.5vw;
+  z-index: 0;
+}
+
+.faceDown {
+  position: absolute;
+  top: 8%;
+  z-index: 1;
+}
+
+.faceUp {
+  position: absolute;
+  top: 2%;
+  z-index: 2;
+}
+
+.faceDown .card:nth-child(n),
+.faceUp .card:nth-child(n){
+  left: calc( var(--n) * 3vw + 3.3vw);
 }
 
 .card.face::before,

@@ -75,6 +75,7 @@ io.on('connection', (socket) => {
     socket.on('gameStart', async ({room, config}) => {
         try {
             const data = await getLobbyById(room);
+            console.log(data);
             const gameState = buildGameState(data, config);
             broadcastIntoRoomWithEvent(socket, room, 'starting...', null);
             broadcastIntoRoomWithEvent(socket, room, 'startingState', gameState);
@@ -110,7 +111,6 @@ io.on('connection', (socket) => {
             const firstPlayer = getFirstPlayer(lobbyData.data.gameState.players);
             update.gameState = lobbyData.data.gameState;
             update.gameState.nextPlayer = firstPlayer;
-            console.log(`first player: ${firstPlayer}`);
             broadcastIntoRoomWithEvent(socket, room, 'nextPlayer', firstPlayer);
         }
 
@@ -127,11 +127,12 @@ const getFirstPlayer = (players) => {
             best: sorted[0].rank,
             second: sorted[1].rank,
             third: sorted[2].rank,
-            player: i
+            player: i,
+            uid: players[i].info.uid
         });
     }
     hands.sort(sortHands);
-    return hands[0].player;
+    return hands[0].uid;
 };
 
 const sortHands = (a, b) => {
@@ -192,7 +193,7 @@ const buildGameState = (data, config) => {
             faceDown: player.faceDown.map(cardToObject),
             faceUp: player.faceUp.map(cardToObject),
             hand: player.hand.map(cardToObject),
-            uid: player.uid
+            info: player.uid
         };
     });
 

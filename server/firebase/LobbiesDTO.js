@@ -17,7 +17,7 @@ export async function getLobbyById(lobbyId) {
     const playersRef = collection(firestore, 'lobbies', lobbyId, 'players');
     const playersData = await getDocs(playersRef);
     playersData.forEach((document) => {
-        answer.players.push(document.id);
+        answer.players.push({uid: document.id, name: document.data().name});
     });
 
     return answer;

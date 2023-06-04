@@ -129,6 +129,14 @@
   z-index: 2;
 }
 
+.nameTag {
+  position: absolute;
+  z-index: 3;
+  top: 80%;
+  width: 100%;
+  text-align: center;
+}
+
 .faceDown .card:nth-child(n),
 .faceUp .card:nth-child(n){
   left: calc( var(--n) * 3vw + 3.3vw);

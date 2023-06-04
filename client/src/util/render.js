@@ -7,23 +7,27 @@ export const renderStartingState = (state, players) => {
     cardHtml.style.left = '50%';
     drawPile.appendChild(cardHtml);
 
+    console.log(state);
+
     let playerNumber = 1;
     const player = state.players;
     for (let i = 0; i < player.length; i++) {
-        if (player[i].uid === auth.currentUser.uid) {
-            players.current[player[i].uid] = {
+        const uid = player[i].info.uid;
+        if (uid === auth.currentUser.uid) {
+            players.current[uid] = {
                 localIndex: 0,
-                serverIndex: i
+                serverIndex: i,
+                name: player[i].info.name
             };
             renderLocalPlayersHand(player[i].hand);
         } else {
-            players.current[player[i].uid] = {
+            players.current[uid] = {
                 localIndex: playerNumber++,
                 serverIndex: i
             };
 
         }
-        renderPlayer(player[i], players.current[player[i].uid].localIndex);
+        renderPlayer(player[i], players.current[uid].localIndex);
     }
 }
 
@@ -37,6 +41,33 @@ export const reRenderHand = (playerNumber, hand) => {
     clearHand(playerNumber);
     renderHand(hand, playerNumber)
 }
+
+export const renderPlayerInfo = (state, players) => {
+    console.log(players);
+    console.log(players.current);
+    state.forEach((player) => {
+        const hand = document.getElementById(players.current[player.info.uid].localIndex);
+        const nameTag = document.createElement('div');
+        nameTag.classList.add('nameTag');
+        nameTag.innerText = player.info.name;
+        hand.appendChild(nameTag);
+    })
+};
+
+export const updateCurrent = (playerIndex) => {
+    deleteLastCurrent();
+    setCurrent(playerIndex)
+};
+
+const deleteLastCurrent = () => {
+    const currents = document.getElementsByClassName('current');
+    Array.from(currents).forEach(div => div.classList.remove('current'));
+};
+
+const setCurrent = (playerIndex) => {
+    const currentPlayer = document.getElementById(playerIndex);
+    currentPlayer.classList.add('current');
+};
 
 const renderPlayer = (hand, playerNumber) => {
     createHandHtml(playerNumber);

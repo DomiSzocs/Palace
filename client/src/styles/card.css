@@ -13,7 +13,7 @@
 
 
 .card {
-  --width: 3em;
+  --width: 2.5vw;
   --height: calc(var(--width) * 1.4);
   width: var(--width);
   height: var(--height);
@@ -27,6 +27,7 @@
   padding: 0.1rem;
   font-size: 0.8rem;
   position: absolute;
+  border: 1px solid black;
 }
 
 #localPlayerHand {
@@ -49,11 +50,12 @@
 }
 
 #localPlayerHand .card:nth-child(n) {
-  --width: 5em;
+  /*--width: 5em;*/
+  --width: 5vw;
   --height: calc(var(--width) * 1.4);
   width: var(--width);
   height: var(--height);
-  left: calc( var(--n) * 3vw + 3.3vw);
+  left: calc( var(--n) * 1vw);
 }
 
 .current .hand .card:nth-child(3){
@@ -145,19 +147,19 @@
 .card.face::before,
 .card.face::after {
   content: attr(data-value);
-  font-size: .7em;
+  font-size: calc(0.2em + .5vw);
   position: absolute;
   letter-spacing: -0.1em;
 }
 
 .card.face::before {
-  top: 0.2rem;
-  left: 0.2rem;
+  top: 0.1vh;
+  left: 0.1vw;
 }
 
 .card.face::after {
-  bottom: 0.2rem;
-  right: 0.2rem;
+  bottom: 0.1vh;
+  right: 0.2vw;
   transform: rotate(180deg);
 }
 
@@ -176,16 +178,35 @@
 
 .card.back::after {
   content: 'O';
+  font-size: calc(0.2em + 1.5vw);
 }
 
 .card.back .suit {
   display: none;
 }
 
+#localPlayerHand .card.face::before,
+#localPlayerHand .card.face::after {
+  content: attr(data-value);
+  font-size: calc(0.2em + 1vw);
+  position: absolute;
+  letter-spacing: -0.1em;
+}
+
+#localPlayerHand .suit {
+  font-size: calc(0.4em + 3vw);
+}
+
 .suit {
-  font-size: 1.75em;
+  font-size: calc(0.2em + 1.5vw);
 }
 
 .card.back {
   background-color: gray;
+}
+
+#centralPile {
+  position: fixed;
+  top: 40%;
+  left: 45%;
 }

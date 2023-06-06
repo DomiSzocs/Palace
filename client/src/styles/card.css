@@ -34,7 +34,7 @@
   position: fixed;
   width: 80%;
   height: 15%;
-  top: 75%;
+  top: 81%;
   left: 25%;
 }
 
@@ -50,7 +50,6 @@
 }
 
 #localPlayerHand .card:nth-child(n) {
-  /*--width: 5em;*/
   --width: 5vw;
   --height: calc(var(--width) * 1.4);
   width: var(--width);
@@ -58,8 +57,8 @@
   left: calc( var(--n) * 1vw);
 }
 
-.current .hand .card:nth-child(3){
-  outline: 4px solid gold;
+.current .nameTag {
+  color: gold;
 }
 
 [id='0'] .card.marked {
@@ -209,4 +208,14 @@
   position: fixed;
   top: 40%;
   left: 45%;
+}
+
+#drawPile .card {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+}
+
+.clickable {
+  cursor: pointer;
 }

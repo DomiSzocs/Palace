@@ -4,11 +4,17 @@ import http from 'http';
 import {Server} from 'socket.io';
 import morgan from 'morgan';
 import lobbyApi from './api/lobbyApi.js'
-import {deletePlayerFromLobby, getHost, getLobbyById, setGameState, updateLobby} from './firebase/LobbiesDTO.js'
+import {
+    deletePlayerFromLobby,
+    getGameState,
+    getHost,
+    getLobbyById,
+    setGameState,
+    updateGameState,
+    updateLobby
+} from './firebase/LobbiesDTO.js'
 import Dealer from './util/dealer.js';
 import {swapCards} from "./util/playerActions.js";
-
-console.log(process.env.CLIENT_APP);
 
 const app = express();
 const server = http.createServer(app)
@@ -25,9 +31,7 @@ io.on('connection', (socket) => {
     for (let [id, socket] of io.of("/").sockets) {
         users[id] = socket.uid;
     }
-    console.log(users);
 
-    console.log(socket.id);
     socket.on('join', (data) => {
         console.log(`Joined: ${data}`)
         socket.lobby = data;
@@ -57,7 +61,7 @@ io.on('connection', (socket) => {
                     socket.to(socket.lobby).emit('host_disconnected');
                     broadcastIntoRoomWithEvent(socket, socket.lobby, 'host_disconnected', null);
                 }
-                console.log(`Socket disconnected with Google ID: ${socket.uid} from ${socket.lobby}`);
+                console.log(`Socket disconnected ID: ${socket.uid} from ${socket.lobby}`);
             })
             .catch(error => console.log(error.message))
     });
@@ -111,18 +115,201 @@ io.on('connection', (socket) => {
             const firstPlayer = getFirstPlayer(lobbyData.data.gameState.players);
             update.gameState = lobbyData.data.gameState;
             update.gameState.nextPlayer = firstPlayer;
-            broadcastIntoRoomWithEvent(socket, room, 'nextPlayer', firstPlayer);
+            broadcastIntoRoomWithEvent(socket, room, 'nextPlayer', firstPlayer.uid);
         }
 
         update.playersNotReady = lobbyData.data.playersNotReady - 1;
         await updateLobby(room, update);
     });
+
+    socket.on('playCards', async ({cards, origin, player, room}) => {
+        const gameState = await getGameState(room);
+        const updates = addCardsToCentralPile(gameState.centralPile, gameState.players[player][origin], cards);
+
+        if (!updates) return;
+
+        const {hand, drawingPile} = completeHand(origin, gameState.drawingPile, updates.usedHand)
+        gameState.players[player][origin] = hand;
+        gameState.centralPile = updates.updatedCentralPile;
+        gameState.drawingPile = drawingPile
+        const updatedHand = {player: gameState.players[player].info.uid, hand:gameState.players[player]}
+
+        broadcastIntoRoomWithEvent(socket, room, 'updateHand', updatedHand);
+        broadcastIntoRoomWithEvent(socket, room, 'updateDrawingPile', drawingPile.length !== 0);
+
+        let nextPlayer = gameState.nextPlayer;
+        let cardsToCentralPile = [];
+        if (updates.updatedCentralPile.length) {
+            nextPlayer = getTheNextPlayer(gameState.nextPlayer, gameState.players);
+            cardsToCentralPile = updates.playedCards;
+        }
+
+        broadcastIntoRoomWithEvent(socket, room, 'updateCentralPile', cardsToCentralPile);
+
+        const updatedGameState = {
+            centralPile: updates.updatedCentralPile,
+            drawingPile: drawingPile,
+            players: gameState.players,
+            nextPlayer: nextPlayer
+        }
+
+        broadcastIntoRoomWithEvent(socket, room, 'nextPlayer', nextPlayer.uid);
+        await updateGameState(room, updatedGameState);
+    });
+
+    socket.on('takeCentralPile', async ({room, player}) => {
+        const gameState = await getGameState(room);
+        addCardsToPlayerHand(gameState.players[player].hand, gameState.centralPile);
+        gameState.centralPile = [];
+        gameState.nextPlayer = getTheNextPlayer(gameState.nextPlayer, gameState.players)
+
+        const updateHandResp = {
+            player: gameState.players[player].info.uid,
+            hand: gameState.players[player]
+        }
+
+        broadcastIntoRoomWithEvent(socket, room, 'updateHand', updateHandResp);
+        broadcastIntoRoomWithEvent(socket, room, 'updateCentralPile', gameState.centralPile);
+        broadcastIntoRoomWithEvent(socket, room, 'nextPlayer', gameState.nextPlayer.uid);
+        await updateGameState(room, gameState);
+    });
+
+    socket.on('tryCard', async ({card, origin, player, room}) => {
+        const gameState = await getGameState(room);
+
+        let container;
+        if (origin === 'deck') {
+            container = gameState.drawingPile;
+        } else {
+            container = gameState.players[player][origin];
+        }
+
+        const cardToPlay = container.splice(card, 1)[0];
+        console.log(cardToPlay);
+        console.log(gameState.centralPile.slice(-1));
+
+        let updateOnCentralPile = [cardToPlay];
+        let nextPlayer = getTheNextPlayer(gameState.nextPlayer, gameState.players);
+        if (isPlayable(cardToPlay, gameState.centralPile.slice(-1))) {
+            console.log('playable');
+            const updatedCentralPile = addToCentralPile(cardToPlay, gameState.centralPile);
+            console.log(updatedCentralPile)
+            if (updatedCentralPile.length === 0) {
+                nextPlayer = gameState.nextPlayer
+                updateOnCentralPile = [];
+            }
+        } else {
+            addCardsToPlayerHand(gameState.players[player].hand, gameState.centralPile);
+            addCardsToPlayerHand(gameState.players[player].hand, [cardToPlay]);
+            gameState.centralPile = [];
+            updateOnCentralPile = [];
+        }
+
+        gameState.nextPlayer = nextPlayer;
+
+        const updateHandObject = {
+            player: gameState.players[player].info.uid,
+            hand: gameState.players[player]
+        }
+
+        console.log(updateOnCentralPile);
+
+        broadcastIntoRoomWithEvent(socket, room, 'updateHand', updateHandObject);
+        broadcastIntoRoomWithEvent(socket, room, 'updateCentralPile', updateOnCentralPile);
+        broadcastIntoRoomWithEvent(socket, room, 'updateDrawingPile', gameState.drawingPile.length !== 0);
+        broadcastIntoRoomWithEvent(socket, room, 'nextPlayer', gameState.nextPlayer.uid);
+        await updateGameState(room, gameState);
+    })
 });
+
+const addToCentralPile = (card, centralPile) => {
+    centralPile.push(card)
+
+    const fourOfAKind = checkIfFourOfAKind(centralPile.slice(-4));
+
+    if (card.rank === '10' || fourOfAKind) {
+        centralPile = [];
+    }
+
+    return centralPile;
+}
+
+const addCardsToPlayerHand = (hand, cards) => {
+    cards.forEach(card => {
+        if (card.rank !== 'JOKER') {
+            hand.push(card)
+        }
+    })
+}
+
+const getTheNextPlayer = (current, players) => {
+    const numberOfPlayers = players.length
+    const index = (current.index + 1) % numberOfPlayers;
+    const uid = players[index].info.uid;
+    return {index, uid};
+}
+
+const completeHand = (origin, drawingPile, playerHand) => {
+    let updatedPlayerHand = [...playerHand];
+    if (playerHand.length < 3) {
+        const cardsNeeded = 3 - playerHand.length;
+        const cardsToDraw = drawingPile.splice(-cardsNeeded);
+        updatedPlayerHand = playerHand.concat(cardsToDraw);
+    }
+
+    return {hand: updatedPlayerHand, drawingPile: drawingPile};
+}
+
+const addCardsToCentralPile = (centralPile, cards, indexes) => {
+    const topCard = centralPile.slice(-1);
+    const firstCard = cards[indexes[0]];
+
+    indexes.forEach(index => console.log(`[${index}]: {rank: ${cards[index].rank}, suit: ${cards[index].suit}}`));
+
+    if (!isPlayable(firstCard, topCard)) return
+
+    const playedCards = indexes.map(index => cards[index]);
+
+    let usedHand = [];
+    for (let i = 0; i < cards.length; i++) {
+        if (indexes.includes(i)) continue;
+
+        usedHand.push(cards[i]);
+    }
+
+    let updatedCentralPile = centralPile.concat(playedCards);
+
+    const fourOfAKind = checkIfFourOfAKind(updatedCentralPile.slice(-4));
+
+    if (firstCard.rank === '10' || fourOfAKind) {
+        updatedCentralPile = [];
+    }
+
+    return {playedCards, updatedCentralPile, usedHand};
+}
+
+const isPlayable = (card, topCard) => {
+    const cardValues = getCardsValues();
+
+    return !topCard.length || topCard[0].rank === '2' || cardValues[card.rank] >= cardValues[topCard[0].rank];
+}
+
+const checkIfFourOfAKind = (cards) => {
+    if (cards.length < 4) return false;
+
+    const reference = cards[0].rank;
+    return cards.every(card => card.rank === reference);
+}
+
+const getIndex = (array, element) => {
+    return array.findIndex(card => card.rank === element.rank && card.suit === element.suit)
+}
 
 const getFirstPlayer = (players) => {
     const hands = []
     for(let i = 0; i < players.length; i++) {
-        const sorted = players[i].hand.sort(sortCards);
+        const playerHandCopy = [...players[i].hand];
+        const sorted = playerHandCopy.sort(sortCards);
         hands.push({
             best: sorted[0].rank,
             second: sorted[1].rank,
@@ -132,7 +319,10 @@ const getFirstPlayer = (players) => {
         });
     }
     hands.sort(sortHands);
-    return hands[0].uid;
+    return {
+        index: hands[0].player,
+        uid: hands[0].uid
+    };
 };
 
 const sortHands = (a, b) => {
@@ -170,9 +360,13 @@ const sortHands = (a, b) => {
 }
 
 const sortCards = (a, b) => {
-    const cardValues = {'3': 0, '4': 1, '5': 2, '6': 3, '7': 4, '8': 5, '9': 6, 'J': 7, 'Q': 8, 'K': 9, 'A': 10, '2': 11, '10': 12, 'JOKER': 13};
-
+    const cardValues = getCardsValues();
     return cardValues[a.rank] < cardValues[b.rank] ? -1 : 1;
+}
+
+const getCardsValues = () => {
+    return {'3': 0, '4': 1, '5': 2, '6': 3, '7': 4, '8': 5, '9': 6,
+        'J': 7, 'Q': 8,'K': 9, 'A': 10, '2': 11, '10': 12, 'JOKER': 13};
 }
 
 const cardToObject = (card) => {

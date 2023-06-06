@@ -49,7 +49,7 @@ function Lobby({room}) {
     const emitGameStart = () => {
         if (!socket) return;
         const config = {
-            numberOfDeck: 2,
+            numberOfDeck: 1,
             numberOfRounds: 3,
             specialCards: {
                 2:true,
@@ -97,7 +97,7 @@ function Lobby({room}) {
         if (!socket) return;
         if (!isGameStarted) return;
 
-        return <GameWindow socket={socket} room={room}/>;
+        return <GameWindow socket={socket} room={room} isHost={isHost}/>;
     };
 
     return (

@@ -1,14 +1,30 @@
 import {auth} from "@/firebase/fireBaseConfig";
 
-export const renderStartingState = (state, players) => {
+export const updateCentralPile = (cards) => {
+    const centralPile = document.getElementById('centralPile');
+    cards.forEach((card) => {
+        const cardHtml = getHtml(card, true);
+        const rotation = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+        const offset = Math.floor(Math.random() * 2) - 0.5;
+        const translation = `translate(${offset}vh, ${offset}vw)`;
+        cardHtml.style.transform = rotation + translation;
+        centralPile.appendChild(cardHtml);
+    })
+}
+
+export const setDrawingPile = (showDrawingPile) => {
     const drawPile = document.getElementById('drawPile');
+    if (!showDrawingPile) {
+        Array.from(drawPile.children).forEach(child => drawPile.removeChild(child));
+        return;
+    }
+
     const cardHtml = getHtml(null, false);
-    cardHtml.style.top = '40%';
-    cardHtml.style.left = '50%';
     drawPile.appendChild(cardHtml);
+}
 
-    console.log(state);
-
+export const renderStartingState = (state, players) => {
+    setDrawingPile(true);
     let playerNumber = 1;
     const player = state.players;
     for (let i = 0; i < player.length; i++) {
@@ -43,8 +59,6 @@ export const reRenderHand = (playerNumber, hand) => {
 }
 
 export const renderPlayerInfo = (state, players) => {
-    console.log(players);
-    console.log(players.current);
     state.forEach((player) => {
         const hand = document.getElementById(players.current[player.info.uid].localIndex);
         const nameTag = document.createElement('div');
@@ -125,7 +139,7 @@ const renderPile = (cards, side, targetPile) => {
     }
 };
 
-const getHtml = (card, side) => {
+export const getHtml = (card, side) => {
     if (side) {
         return getFace(card);
     }

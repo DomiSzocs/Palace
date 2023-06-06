@@ -2,6 +2,13 @@ export const chooseACard = (card, parent, container) => {
     const cards = Array.from(parent.children);
     const clicked = cards.indexOf(card);
 
+    console.log(cards);
+    console.log(container);
+
+    if (cards.length > 3) {
+        return;
+    }
+
     if (container.current[0] === clicked) {
         unmark(card);
         container.current.pop();
@@ -13,6 +20,33 @@ export const chooseACard = (card, parent, container) => {
     mark(card);
     container.current.push(clicked);
 };
+
+export const addCard = (card, parent, container) => {
+    const cards = Array.from(parent.children);
+    const clicked = cards.indexOf(card);
+    const rank = card.dataset.value.split('\n')[0];
+
+    const index = container.current.findIndex(a => a.rank === rank && a.index === clicked);
+    if (index !== -1) {
+        unmark(card);
+        container.current.splice(index, 1);
+        console.log(container.current);
+        return;
+    }
+
+    if (!container.current.length) {
+        container.current.push({rank, index: clicked});
+        mark(card);
+        console.log(container.current);
+        return;
+    }
+
+    if (container.current[0].rank === rank) {
+        container.current.push({rank, index: clicked});
+        mark(card);
+        console.log(container.current);
+    }
+}
 
 export const getClickedCard = (clicked) => {
     if (clicked.classList[0] === 'suit') {
@@ -27,4 +61,18 @@ const mark = (card) => {
 
 const unmark = (card) => {
     card.classList.remove('marked');
+}
+
+export const removeMarks = (handContainer, faceUpContainer) => {
+    const hand = document.getElementById('localPlayerHand');
+    handContainer.current.forEach((card) => {
+        hand.children[card].classList.remove('marked');
+    })
+
+    const faceUp = document.getElementById('0').children[1];
+    faceUpContainer.current.forEach((card) => {
+        faceUp.children[card].classList.remove('marked');
+    })
+    handContainer.current = [];
+    faceUpContainer.current = [];
 }

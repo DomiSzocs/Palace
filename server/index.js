@@ -26,11 +26,7 @@ function broadcastIntoRoomWithEvent (socket, room, ev,  data) {
 }
 
 io.on('connection', (socket) => {
-    const users = {};
     socket.uid = socket.handshake.query.uid;
-    for (let [id, socket] of io.of("/").sockets) {
-        users[id] = socket.uid;
-    }
 
     socket.on('join', (data) => {
         console.log(`Joined: ${data}`)
@@ -64,16 +60,6 @@ io.on('connection', (socket) => {
                 console.log(`Socket disconnected ID: ${socket.uid} from ${socket.lobby}`);
             })
             .catch(error => console.log(error.message))
-    });
-
-    socket.on('private', () => {
-        console.log(users)
-        console.log("send?");
-        console.log(socket.rooms);
-        console.log(users[0].userId);
-        console.log(users[2].userId);
-        socket.to(users[0].userID).emit('receive', {message:"privi", room:"idk"})
-        socket.to(users[2].userID).emit('receive', {message:"privi", room:"idk"})
     });
 
     socket.on('gameStart', async ({room, config}) => {

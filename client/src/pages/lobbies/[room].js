@@ -24,7 +24,7 @@ function Lobby({room}) {
 
         localSocket.emit('join', room);
 
-        localSocket.emit('amIHost', {user:auth.currentUser.uid, room});
+        localSocket.emit('amIHost', {user: auth.currentUser.uid, room});
 
         localSocket.on('host_disconnected', () => {
             console.log("no host");
@@ -41,6 +41,8 @@ function Lobby({room}) {
         });
 
         router.events.on('routeChangeStart', () => {
+            const user = auth.currentUser.uid;
+            localSocket.emit('disconnecting...', {user, room})
             localSocket.close();
             return true;
         });

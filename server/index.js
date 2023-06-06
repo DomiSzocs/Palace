@@ -49,15 +49,14 @@ io.on('connection', (socket) => {
         broadcastIntoRoomWithEvent(socket, data.room, 'receive', data);
     });
 
-    socket.on('disconnect', () => {
-        deletePlayerFromLobby(socket.lobby, socket.uid)
+    socket.on('disconnecting...', ({room, user}) => {
+        deletePlayerFromLobby(room, user)
             .then((returnValue) => {
                 if (returnValue === -1) {
-                    console.log(`${socket.lobby} host left`)
-                    socket.to(socket.lobby).emit('host_disconnected');
-                    broadcastIntoRoomWithEvent(socket, socket.lobby, 'host_disconnected', null);
+                    console.log(`${room} host left`)
+                    broadcastIntoRoomWithEvent(socket, room, 'host_disconnected', null);
                 }
-                console.log(`Socket disconnected ID: ${socket.uid} from ${socket.lobby}`);
+                console.log(`Socket disconnected ID: ${user} from ${room}`);
             })
             .catch(error => console.log(error.message))
     });

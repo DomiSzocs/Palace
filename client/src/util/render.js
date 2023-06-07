@@ -58,6 +58,12 @@ export const reRenderHand = (playerNumber, hand) => {
     renderHand(hand, playerNumber)
 }
 
+export const reRenderLocalPlayerHand = (newHand) => {
+    const localPlayersHand = document.getElementById('localPlayerHand');
+    localPlayersHand.innerHTML = '';
+    renderPile(newHand, true, localPlayersHand);
+}
+
 export const renderPlayerInfo = (state, players) => {
     state.forEach((player) => {
         const hand = document.getElementById(players.current[player.info.uid].localIndex);

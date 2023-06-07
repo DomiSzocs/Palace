@@ -4,7 +4,7 @@ import {
     renderStartingState,
     reRenderHand,
     updateCentralPile,
-    updateCurrent, setDrawingPile, renderFinishedText
+    updateCurrent, setDrawingPile, renderFinishedText, reRenderLocalPlayerHand
 } from "@/util/render";
 import {auth} from "@/firebase/fireBaseConfig";
 import {
@@ -74,6 +74,15 @@ function GameWindow({socket, room}) {
             renderFinishedText(uid.current);
         });
 
+        socket.on('sortedHand', ({hand, isCurrentPlayer}) => {
+            reRenderLocalPlayerHand(hand);
+
+            if (isCurrentPlayer) {
+                const handler = roundHandlers.current.handlePlayFromHand;
+                useHandler(document.getElementById('localPlayerHand'), handler);
+            }
+        });
+
         inited.current = true;
     }, []);
 
@@ -123,6 +132,15 @@ function GameWindow({socket, room}) {
         console.log(req.cards);
     }
 
+    const sortHand = () => {
+        const player = players.current[uid.current].serverIndex;
+        const req = {
+            room: room,
+            player: player,
+        }
+        socket.emit('sortHand', req);
+    }
+
     return (
         <div id="container">
             <div id="centralPile"></div>
@@ -131,7 +149,7 @@ function GameWindow({socket, room}) {
             <button id="swapButton" onClick={swap} >Swap</button>
             <button id="readyButton" onClick={sendReady}>Ready</button>
             <button id="playButton" onClick={playCards}>Play Cards</button>
-            <button id="sortButton">Sort Hand</button>
+            <button id="sortButton" onClick={sortHand}>Sort Hand</button>
         </div>
     );
 }

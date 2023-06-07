@@ -210,6 +210,25 @@ io.on('connection', (socket) => {
 
         await updateGameState(room, gameState);
     });
+
+    socket.on('sortHand', async ({room, player}) => {
+        const gameState = await getGameState(room);
+
+        console.log(gameState);
+
+        const playerHand = gameState.players[player].hand;
+        playerHand.sort(sortCards);
+
+        const isCurrentPlayer = gameState.nextPlayer.index === player;
+        const sortedHandResp = {
+            hand: gameState.players[player].hand,
+            isCurrentPlayer: isCurrentPlayer
+        };
+
+        socket.emit('sortedHand', sortedHandResp);
+
+        await updateGameState(room, gameState);
+    });
 });
 
 const handlePlayerFinish = (socket, gameState, player) => {

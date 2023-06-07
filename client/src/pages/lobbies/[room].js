@@ -6,11 +6,13 @@ import Chat from "@/components/Chat";
 import {auth} from "@/firebase/fireBaseConfig";
 import {useRouter} from "next/router";
 import GameWindow from "@/components/GameWindow";
+import PostGameWindow from "@/components/PostGameWindow";
 
 function Lobby({room}) {
     const [socket, setSocket] = useState(null);
     const [isGameStarted, setIsGameStarted] = useState(false);
     const [isHost, setIsHost] = useState(false);
+    const [isGameOver, setIsGameOver] = useState(false);
     const isSocketInitialized = useRef(false);
     const router = useRouter();
 
@@ -38,6 +40,11 @@ function Lobby({room}) {
 
         localSocket.on('starting...', () => {
             setIsGameStarted(true);
+        });
+
+        localSocket.on('gameOver', () => {
+            console.log('gameOver!!');
+            setIsGameOver(true);
         });
 
         router.events.on('routeChangeStart', () => {
@@ -99,9 +106,14 @@ function Lobby({room}) {
         if (!socket) return;
         if (!isGameStarted) return;
 
-        return <GameWindow socket={socket} room={room} isHost={isHost}/>;
+        return <GameWindow socket={socket} room={room}/>;
     };
 
+    const GetPostGameWindow = () => {
+        if (!isGameOver) return;
+
+        return <PostGameWindow/>
+    }
     return (
         <>
             <HomeLink/>
@@ -109,6 +121,7 @@ function Lobby({room}) {
             {GetGameWindow()}
             {GetStartButton()}
             {GetRoomElements()}
+            {GetPostGameWindow()}
         </>
     );
 }

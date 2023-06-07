@@ -92,3 +92,55 @@ input {
   top: 85%;
   z-index: 4;
 }
+
+#postGameContainer {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  font-size: calc(0.2rem + 1vmax);
+}
+
+#postGameWindow {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 1rem;
+  position: absolute;
+  border: 1px solid black;
+  width: 35vw;
+  height: 50vh;
+  top: 20vh;
+}
+
+#postGameWindow div{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+#postGameWindow div:nth-child(1) {
+  height: 70%;
+}
+
+#postGameWindow div:nth-child(2) {
+  height: 30%;
+}
+
+#container button,
+#postGameWindow button {
+  border-radius: 0.8rem;
+  padding: 0.4rem;
+  background-color: #205212;
+  color: #fff;
+  min-width: 7vw;
+}
+
+#postGameWindow button {
+  display: block;
+  margin: auto;
+}
+
+#postGameWindow ul{
+  text-align: center;
+}

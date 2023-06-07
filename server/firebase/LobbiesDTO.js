@@ -72,10 +72,6 @@ export async function addPlayerToLobby(lobbyId, player) {
 }
 
 export async function deletePlayerFromLobby(lobbyId, uid) {
-
-    console.log("deleting....");
-    console.log(uid)
-
     if (!lobbyId) return;
     if (!uid) return;
 
@@ -84,6 +80,22 @@ export async function deletePlayerFromLobby(lobbyId, uid) {
 
     if (!lobbyData.exists()) {
         throw new Error(`Lobby with id ${lobbyId} does not exist`)
+    }
+
+    const gameState = lobbyData.data().gameState;
+    console.log(lobbyData.data());
+    console.log(lobbyData.data().gameState);
+    if (gameState) {
+        let i = 0;
+        while (gameState.players[i].info.uid !== uid) {
+            i++;
+        }
+        console.log(gameState.players[i].stillPlaying);
+        if (gameState.players[i].stillPlaying) {
+            gameState.players.splice(i, 1);
+            gameState.playersStillInMatch--;
+            await updateGameState(lobbyId, gameState)
+        }
     }
 
     if (lobbyData.data().host === uid) {
@@ -97,7 +109,12 @@ export async function deletePlayerFromLobby(lobbyId, uid) {
     }
 
     const playerRef = doc(firestore, "lobbies", lobbyId, "players", uid);
-    await deleteDoc(playerRef)
+    await deleteDoc(playerRef);
+
+    if (gameState && gameState.playersStillInMatch <= 1) {
+        return 1;
+    }
+
     return 0;
 }
 

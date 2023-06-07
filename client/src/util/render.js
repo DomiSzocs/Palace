@@ -73,6 +73,13 @@ export const updateCurrent = (playerIndex) => {
     setCurrent(playerIndex)
 };
 
+export const renderFinishedText = (divId) => {
+    const parentDiv = document.getElementById(divId);
+    const finishedText = document.createElement("p");
+    finishedText.innerText = "Waiting for other players to finish...";
+    parentDiv.appendChild(finishedText);
+}
+
 const deleteLastCurrent = () => {
     const currents = document.getElementsByClassName('current');
     Array.from(currents).forEach(div => div.classList.remove('current'));
@@ -139,7 +146,7 @@ const renderPile = (cards, side, targetPile) => {
     }
 };
 
-export const getHtml = (card, side) => {
+const getHtml = (card, side) => {
     if (side) {
         return getFace(card);
     }

@@ -1,10 +1,10 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useId, useRef} from 'react';
 import {
     renderPlayerInfo,
     renderStartingState,
     reRenderHand,
     updateCentralPile,
-    updateCurrent, setDrawingPile
+    updateCurrent, setDrawingPile, renderFinishedText
 } from "@/util/render";
 import {auth} from "@/firebase/fireBaseConfig";
 import {
@@ -14,7 +14,7 @@ import {
 } from "@/util/eventListeners";
 import {removeMarks} from "@/util/userInteractions";
 
-function GameWindow({socket, room, isHost}) {
+function GameWindow({socket, room}) {
     let inited = useRef(false);
     const chosenFromHand = useRef([]);
     const chosenFromFaceUp = useRef([]);
@@ -25,7 +25,6 @@ function GameWindow({socket, room, isHost}) {
 
     useEffect(() => {
         if (inited.current) return;
-        console.log(isHost);
 
         socket.on('startingState', (state) => {
             renderStartingState(state, players);
@@ -54,7 +53,7 @@ function GameWindow({socket, room, isHost}) {
             }
 
             document.getElementById('playButton').disabled = true;
-        })
+        });
 
         socket.on('updateCentralPile', (cards) => {
             const centralPile = document.getElementById('centralPile');
@@ -71,9 +70,9 @@ function GameWindow({socket, room, isHost}) {
             setDrawingPile(showDrawingPile);
         });
 
-        socket.on('gameOver', () => {
-            console.log(isHost)
-        })
+        socket.on('finished', () => {
+            renderFinishedText(uid.current);
+        });
 
         inited.current = true;
     }, []);
@@ -97,7 +96,7 @@ function GameWindow({socket, room, isHost}) {
     };
 
     const sendReady = () => {
-        socket.emit('ready', {room, uid:uid.current});
+        socket.emit('ready', room);
         removeSwapPhaseEventListeners(swapHandler.current);
         removeMarks(chosenFromHand, chosenFromFaceUp);
         document.getElementById('readyButton').style.display = 'none';

@@ -7,6 +7,7 @@ import {auth} from "@/firebase/fireBaseConfig";
 import {useRouter} from "next/router";
 import GameWindow from "@/components/GameWindow";
 import PostGameWindow from "@/components/PostGameWindow";
+import restricted from "@/components/Restricted";
 
 function Lobby({room}) {
     const [socket, setSocket] = useState(null);
@@ -17,6 +18,7 @@ function Lobby({room}) {
     const router = useRouter();
 
     useEffect(() => {
+        console.log(`in lobby ${room}`);
         if (isSocketInitialized.current) return;
         const localSocket = io(process.env.NEXT_PUBLIC_GAME_SERVER, {
             query: { uid: auth.currentUser.uid }
@@ -125,7 +127,7 @@ function Lobby({room}) {
     );
 }
 
-export default authenticated(Lobby);
+export default authenticated(restricted(Lobby));
 
 export async function getServerSideProps(context) {
     const {params} = context;

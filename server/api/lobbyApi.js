@@ -33,7 +33,7 @@ router.put('/api/lobbies/:room', async (req, res) => {
         res.status(204).end();
     } catch (error) {
         console.error(error);
-        res.status(500).send('Something went wrong!');
+        res.status(500).send({error: error.message});
     }
 });
 

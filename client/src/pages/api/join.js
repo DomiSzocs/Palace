@@ -17,7 +17,7 @@ export default async function join(req, res) {
     if (response.status === 204) {
         res.status(204).end();
     } else {
-        res.status(400).send('Cannot join!');
+        res.status(400).send(response.body);
     }
 }
 

@@ -57,6 +57,10 @@ export async function addPlayerToLobby(lobbyId, player) {
         throw new Error(`Lobby with id ${lobbyId} already started`)
     }
 
+    if (lobbyData.data().host === player.id) {
+        return 0;
+    }
+
     const playerRef = doc(firestore, "lobbies", lobbyId, "players", player.id);
     const playerData = await getDoc(playerRef);
 

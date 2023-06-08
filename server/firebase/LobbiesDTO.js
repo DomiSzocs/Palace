@@ -94,6 +94,7 @@ export async function deletePlayerFromLobby(lobbyId, uid) {
         if (gameState.players[i].stillPlaying) {
             gameState.players.splice(i, 1);
             gameState.playersStillInMatch--;
+            gameState.playersFinished++;
             await updateGameState(lobbyId, gameState)
         }
     }

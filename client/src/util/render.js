@@ -80,6 +80,7 @@ export const updateCurrent = (playerIndex) => {
 };
 
 export const renderFinishedText = (divId) => {
+    console.log(divId);
     const parentDiv = document.getElementById(divId);
     const finishedText = document.createElement("p");
     finishedText.innerText = "Waiting for other players to finish...";

@@ -34,7 +34,7 @@
   position: fixed;
   width: 80%;
   height: 15%;
-  top: 81%;
+  top: 80vh;
   left: 25%;
 }
 
@@ -131,6 +131,7 @@
 }
 
 .nameTag {
+  color: #339619;
   position: absolute;
   z-index: 3;
   top: 80%;

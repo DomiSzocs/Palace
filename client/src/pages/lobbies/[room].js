@@ -12,7 +12,7 @@ function Lobby({room}) {
     const [socket, setSocket] = useState(null);
     const [isGameStarted, setIsGameStarted] = useState(false);
     const [isHost, setIsHost] = useState(false);
-    const [isGameOver, setIsGameOver] = useState(false);
+    const [endOfGameStats, setEndOfGameStats] = useState(null);
     const isSocketInitialized = useRef(false);
     const router = useRouter();
 
@@ -42,9 +42,8 @@ function Lobby({room}) {
             setIsGameStarted(true);
         });
 
-        localSocket.on('gameOver', () => {
-            console.log('gameOver!!');
-            setIsGameOver(true);
+        localSocket.on('gameOver', (points) => {
+            setEndOfGameStats(points);
         });
 
         router.events.on('routeChangeStart', () => {
@@ -110,9 +109,9 @@ function Lobby({room}) {
     };
 
     const GetPostGameWindow = () => {
-        if (!isGameOver) return;
+        if (!endOfGameStats) return;
 
-        return <PostGameWindow/>
+        return <PostGameWindow stats={endOfGameStats}/>
     }
     return (
         <>

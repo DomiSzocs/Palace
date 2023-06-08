@@ -15,6 +15,7 @@ import {
 } from './firebase/LobbiesDTO.js'
 import Dealer from './util/dealer.js';
 import {swapCards} from "./util/playerActions.js";
+import {updateUsersPoints} from "./firebase/UsersDTO.js";
 
 const app = express();
 const server = http.createServer(app)
@@ -140,7 +141,7 @@ io.on('connection', (socket) => {
         broadcastIntoRoomWithEvent(socket, room, 'nextPlayer', nextPlayer.uid);
 
         handlePlayerFinish(socket, gameState, player);
-        handleGameOver(socket, gameState.playersStillInMatch, room);
+        handleGameOver(socket, gameState, room);
 
         await updateGameState(room, gameState);
     });
@@ -198,15 +199,13 @@ io.on('connection', (socket) => {
             hand: gameState.players[player]
         }
 
-        console.log(updateOnCentralPile);
-
         broadcastIntoRoomWithEvent(socket, room, 'updateHand', updateHandObject);
         broadcastIntoRoomWithEvent(socket, room, 'updateCentralPile', updateOnCentralPile);
         broadcastIntoRoomWithEvent(socket, room, 'updateDrawingPile', gameState.drawingPile.length !== 0);
         broadcastIntoRoomWithEvent(socket, room, 'nextPlayer', gameState.nextPlayer.uid);
 
-        handlePlayerFinish(socket, gameState, player)
-        handleGameOver(socket, gameState.playersStillInMatch, room);
+        handlePlayerFinish(socket, gameState, player);
+        handleGameOver(socket, gameState, room);
 
         await updateGameState(room, gameState);
     });
@@ -214,17 +213,18 @@ io.on('connection', (socket) => {
     socket.on('sortHand', async ({room, player}) => {
         const gameState = await getGameState(room);
 
-        console.log(gameState);
-
         const playerHand = gameState.players[player].hand;
         playerHand.sort(sortCards);
 
-        const isCurrentPlayer = gameState.nextPlayer.index === player;
+        let isCurrentPlayer = false;
+        if (gameState.nextPlayer) {
+            isCurrentPlayer = gameState.nextPlayer.index === player;
+        }
+
         const sortedHandResp = {
             hand: gameState.players[player].hand,
             isCurrentPlayer: isCurrentPlayer
         };
-
         socket.emit('sortedHand', sortedHandResp);
 
         await updateGameState(room, gameState);
@@ -235,17 +235,39 @@ const handlePlayerFinish = (socket, gameState, player) => {
     if (!isPlayerFinished(gameState.players[player])) return;
 
     gameState.players[player].stillPlaying = false;
+    console.log('--');
+    console.log(gameState.playersStillInMatch);
     gameState.playersStillInMatch--;
-
+    console.log(gameState.playersStillInMatch);
+    console.log('--');
+    gameState.playersFinished++;
+    gameState.players[player].finishedAs = gameState.playersFinished;
     socket.emit('finished');
-    console.log('finished');
 }
 
-const handleGameOver = (socket, playersStillInMatch, room) => {
-    if(!isGameOver(playersStillInMatch)) return;
+const handleGameOver = (socket, gameState, room) => {
+    if(!isGameOver(gameState.playersStillInMatch)) return;
 
-    broadcastIntoRoomWithEvent(socket, room, 'gameOver', null);
-    console.log('gameOver');
+    const playerPoints = calculatePoints(gameState);
+    updateUsersPoints(playerPoints).then();
+    broadcastIntoRoomWithEvent(socket, room, 'gameOver', playerPoints);
+}
+
+const calculatePoints = (gameState) => {
+    const finishers = gameState.players.length;
+    const playersPoints = []
+    gameState.players.forEach((player) => {
+        let points = 0;
+        if (player.finishedAs) {
+            points =  finishers - player.finishedAs;
+        }
+        if (player.finishedAs === 1) {
+            points++;
+        }
+        playersPoints.push({uid: player.info.uid, points: points, name: player.info.name});
+    });
+    gameState.playersPoints = playersPoints;
+    return playersPoints;
 }
 
 const isPlayerFinished = (player) => {
@@ -301,8 +323,6 @@ const completeHand = (origin, drawingPile, playerHand) => {
 const addCardsToCentralPile = (centralPile, cards, indexes) => {
     const topCard = centralPile.slice(-1);
     const firstCard = cards[indexes[0]];
-
-    indexes.forEach(index => console.log(`[${index}]: {rank: ${cards[index].rank}, suit: ${cards[index].suit}}`));
 
     if (!isPlayable(firstCard, topCard)) return
 
@@ -430,7 +450,8 @@ const buildGameState = (data, config) => {
         players: playersStates,
         drawingPile: drawingPile,
         centralPile: [],
-        playersStillInMatch: playersStates.length
+        playersStillInMatch: playersStates.length,
+        playersFinished: 0
     };
 }
 

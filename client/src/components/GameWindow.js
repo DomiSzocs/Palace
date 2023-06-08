@@ -71,7 +71,7 @@ function GameWindow({socket, room}) {
         });
 
         socket.on('finished', () => {
-            renderFinishedText(uid.current);
+            renderFinishedText('0');
         });
 
         socket.on('sortedHand', ({hand, isCurrentPlayer}) => {

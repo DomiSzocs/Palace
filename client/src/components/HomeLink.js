@@ -6,7 +6,7 @@ function HomeLink() {
     const router = useRouter();
 
     return (
-        <Link href={'/'} replace={true}>Back home page</Link>
+        <Link id="homeLink" href={'/'} replace={true}>➜</Link>
     );
 }
 

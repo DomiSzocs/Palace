@@ -44,7 +44,7 @@ function Chat({socket, room}) {
             <span onFocus={expandChatWindow} onBlur={resetChatWindow}>
                 <input ref={inputField} type='text' />
             </span>
-            <button onClick={send}>{"<-"}</button>
+            <button onClick={send}>{"↵"}</button>
         </>
     );
 }

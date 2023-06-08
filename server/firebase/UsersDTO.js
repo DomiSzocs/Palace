@@ -1,4 +1,4 @@
-import {doc, getDoc, setDoc, updateDoc} from "firebase/firestore";
+import {collection, doc, getDoc, getDocs, setDoc, updateDoc} from "firebase/firestore";
 import {firestore} from "./fireBaseConfig.js";
 
 
@@ -17,8 +17,23 @@ export async function updateUserPoints(user) {
 }
 
 export async function updateUsersPoints(userPoints) {
-    console.log(userPoints)
     userPoints.forEach((user) => {
        updateUserPoints(user);
     });
+}
+
+export async function getUsers() {
+    const usersRef = collection(firestore, 'users');
+    const usersData = await getDocs(usersRef);
+    const returnValue = []
+    usersData.forEach((document) => {
+        returnValue.push(
+            {
+                uid: document.id,
+                name: document.data().name,
+                points: document.data().points
+            });
+    });
+
+    return {users: returnValue};
 }

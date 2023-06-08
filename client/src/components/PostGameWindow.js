@@ -1,26 +1,10 @@
 import {useEffect} from "react";
 import {useRouter} from "next/router";
+import SortedList from "@/components/SortedList";
 
 function PostGameWindow({stats}) {
 
     const router = useRouter();
-
-    const populateWindow = () => {
-        stats.sort((a, b) => {
-            return a.points > b.points ? -1 : 1;
-        });
-        return (
-            <ul>
-                {
-                    stats.map((stat) => {
-                        return (
-                            <li key={stat.uid}>{`${stat.name}: ${stat.points}`}</li>
-                        )
-                    })
-                }
-            </ul>
-        );
-    }
 
     const backToMain = () => {
         router.replace('/').then(() => null);
@@ -30,7 +14,7 @@ function PostGameWindow({stats}) {
         <div id="postGameContainer">
             <div id="postGameWindow">
                 <div>
-                    {populateWindow()}
+                    <SortedList list={stats}/>
                 </div>
                 <div>
                     <button>Back To Lobby</button>

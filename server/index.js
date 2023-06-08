@@ -16,6 +16,7 @@ import {
 import Dealer from './util/dealer.js';
 import {swapCards} from "./util/playerActions.js";
 import {updateUsersPoints} from "./firebase/UsersDTO.js";
+import userApi from "./api/userApi.js";
 
 const app = express();
 const server = http.createServer(app)
@@ -460,6 +461,8 @@ app.use(morgan('tiny'));
 app.use(express.json());
 
 app.use(lobbyApi);
+
+app.use(userApi);
 
 server.listen(3001, () => {
     console.log('Server started on port 3001');

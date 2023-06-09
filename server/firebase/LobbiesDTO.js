@@ -2,7 +2,6 @@ import {collection, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc} from 'fi
 import {firestore} from "./fireBaseConfig.js";
 
 export async function getLobbyById(lobbyId) {
-    console.log(lobbyId);
     const lobbyRef = doc(firestore, 'lobbies', lobbyId);
     const lobbyData = await getDoc(lobbyRef);
 
@@ -35,7 +34,7 @@ export async function createLobby(room, host) {
     const data = {
         host: host.id,
         started: false,
-        isPrivate: true
+        isPublic: false
     };
 
     console.log(data);
@@ -62,11 +61,6 @@ export async function addPlayerToLobby(lobbyId, player) {
     }
 
     const playerRef = doc(firestore, "lobbies", lobbyId, "players", player.id);
-    const playerData = await getDoc(playerRef);
-
-    if(playerData.exists()) {
-        throw new Error('This player already joined!')
-    }
 
     const newPlayerData = {
         name: player.name,

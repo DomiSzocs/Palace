@@ -8,11 +8,13 @@ import {useRouter} from "next/router";
 import GameWindow from "@/components/GameWindow";
 import PostGameWindow from "@/components/PostGameWindow";
 import restricted from "@/components/Restricted";
+import Switch from "@/components/Switch";
+import PlayerList from "@/components/PlayerList";
 
 function Lobby({room}) {
     const [socket, setSocket] = useState(null);
     const [isGameStarted, setIsGameStarted] = useState(false);
-    const [isHost, setIsHost] = useState(false);
+    const [isHost, setIsHost] = useState(null);
     const [endOfGameStats, setEndOfGameStats] = useState(null);
     const isSocketInitialized = useRef(false);
     const router = useRouter();
@@ -26,7 +28,7 @@ function Lobby({room}) {
         setSocket(localSocket);
         isSocketInitialized.current = true;
 
-        localSocket.emit('join', room);
+        localSocket.emit('join', {user: auth.currentUser.uid, room});
 
         localSocket.emit('amIHost', {user: auth.currentUser.uid, room});
 
@@ -58,30 +60,21 @@ function Lobby({room}) {
 
     const emitGameStart = () => {
         if (!socket) return;
-        const config = {
-            numberOfDeck: 1,
-            numberOfRounds: 3,
-            specialCards: {
-                2:true,
-                10:true,
-                'JOKER': true
-            }
-        };
-        socket.emit('gameStart', {room, config});
+        socket.emit('gameStart', {room});
     };
 
     const copyRoom = ({target}) => {
         navigator.clipboard.writeText(target.innerText);
-        target.nextSibling.style.display = 'inline-block';
+        target.nextSibling.style.display = 'inline';
     }
 
     const GetRoomElements = () => {
         if (isGameStarted) return;
 
         return (
-            <div>
-                <h1 onClick={copyRoom}>{room}</h1>
-                <p id='copyMessage'>Copied!</p>
+            <div className="roomId">
+                <div onClick={copyRoom}>{room}</div>
+                <div id="copyMessage">Copied!</div>
             </div>
         );
     };
@@ -90,16 +83,18 @@ function Lobby({room}) {
         if (isGameStarted) return;
         if (!isHost) return;
 
-        return <button onClick={emitGameStart}> Start The Game</button>;
+        return <button id="startTheGameButton" onClick={emitGameStart}> Start The Game</button>;
     };
 
     const GetChat = () => {
         if (!socket) return;
 
         return (
-            <div className='chat'>
-                {socket && <Chat socket={socket} room={room}/>}
-            </div>
+            <>
+                <div className='chat'>
+                    {socket && <Chat socket={socket} room={room}/>}
+                </div>
+            </>
         );
     };
 
@@ -123,6 +118,8 @@ function Lobby({room}) {
             {GetStartButton()}
             {GetRoomElements()}
             {GetPostGameWindow()}
+            {isHost != null && <Switch room={room} socket={socket} isHost={isHost}/>}
+            {socket && <PlayerList socket={socket}/>}
         </>
     );
 }

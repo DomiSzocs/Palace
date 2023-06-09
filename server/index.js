@@ -28,11 +28,11 @@ function broadcastIntoRoomWithEvent (socket, room, ev,  data) {
 }
 
 io.on('connection', (socket) => {
-    socket.on('join', (data) => {
-        console.log(`Joined: ${data}`)
-        socket.lobby = data;
-        socket.join(data);
-        socket.emit('joined');
+    socket.on('join', async ({room, user}) => {
+        console.log(`Joined: ${room}`)
+        socket.join(room);
+        const lobbyData = await getLobbyById(room);
+        broadcastIntoRoomWithEvent(socket, room, 'joined', lobbyData.players);
     });
 
     socket.on('amIHost', ({user, room}) => {
@@ -50,6 +50,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnecting...', ({room, user}) => {
+        broadcastIntoRoomWithEvent(socket, room, 'playerLeft', user);
         deletePlayerFromLobby(room, user)
             .then((returnValue) => {
                 if (returnValue === -1) {
@@ -64,10 +65,10 @@ io.on('connection', (socket) => {
             .catch(error => console.log(error.message))
     });
 
-    socket.on('gameStart', async ({room, config}) => {
+    socket.on('gameStart', async ({room}) => {
         try {
             const data = await getLobbyById(room);
-            const gameState = buildGameState(data, config);
+            const gameState = buildGameState(data);
             broadcastIntoRoomWithEvent(socket, room, 'starting...', null);
             broadcastIntoRoomWithEvent(socket, room, 'startingState', gameState);
             await setGameState(room, gameState, true);
@@ -229,6 +230,26 @@ io.on('connection', (socket) => {
         socket.emit('sortedHand', sortedHandResp);
 
         await updateGameState(room, gameState);
+    });
+
+    socket.on('setVisibility', async ({room, state}) => {
+        const lobbyData = await getLobbyById(room);
+
+        lobbyData.data.isPublic = state;
+        console.log("set:")
+        console.log(state);
+
+        broadcastIntoRoomWithEvent(socket, room, 'setSwitch', state);
+
+        await updateLobby(room, lobbyData.data);
+    });
+
+    socket.on('getSwitchState', async ({room}) => {
+        const lobbyData = await getLobbyById(room);
+
+        console.log("get:")
+        console.log(lobbyData.data.isPublic);
+        broadcastIntoRoomWithEvent(socket, room, 'setSwitch', lobbyData.data.isPublic);
     });
 });
 
@@ -431,8 +452,13 @@ const cardToObject = (card) => {
     };
 };
 
-const buildGameState = (data, config) => {
-    const dealer = new Dealer(data.players, config.numberOfDeck);
+function calculateDecksNeeded(players) {
+    return Math.floor((players - 1) / 3) + 1;
+}
+
+const buildGameState = (data) => {
+    const numberOfDeck = calculateDecksNeeded(data.players.length);
+    const dealer = new Dealer(data.players, numberOfDeck);
     const players = dealer.deal();
 
     const drawingPile = dealer.deck.cards.map(cardToObject);

@@ -10,6 +10,7 @@ export default async function createLobbyApi(req, res) {
             host: host
         }),
         headers: {
+            'Authorization': req.headers.authorization,
             'Content-Type': 'application/json'
         }
     });

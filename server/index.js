@@ -17,6 +17,7 @@ import Dealer from './util/dealer.js';
 import {swapCards} from "./util/playerActions.js";
 import {updateUsersPoints} from "./firebase/UsersDTO.js";
 import userApi from "./api/userApi.js";
+import {verifyToken} from "./middlewares/authMiddleWare.js";
 
 const app = express();
 const server = http.createServer(app)
@@ -485,6 +486,8 @@ const buildGameState = (data) => {
 app.use(morgan('tiny'));
 
 app.use(express.json());
+
+app.use(verifyToken);
 
 app.use(lobbyApi);
 

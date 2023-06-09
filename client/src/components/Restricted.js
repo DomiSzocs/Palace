@@ -18,7 +18,8 @@ const restricted = (Component) => {
                     method: 'PUT',
                     body: JSON.stringify({room: props.room, player}),
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + auth.currentUser.accessToken
                     }
                 });
                 const status = response.status;
@@ -30,7 +31,7 @@ const restricted = (Component) => {
                 }
             };
 
-            fetchData();
+            fetchData().then();
         }, []);
 
         if (loading) {

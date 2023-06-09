@@ -19,7 +19,8 @@ function Home() {
                 host: host
             }),
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + auth.currentUser.accessToken
             }
         });
 

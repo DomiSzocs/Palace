@@ -10,6 +10,7 @@ export default async function join(req, res) {
             player
         }),
         headers: {
+            'Authorization': req.headers.authorization,
             'Content-Type': 'application/json'
         }
     });

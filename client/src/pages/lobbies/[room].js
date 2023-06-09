@@ -110,6 +110,21 @@ function Lobby({room}) {
 
         return <PostGameWindow stats={endOfGameStats}/>
     }
+
+    const GetSwitch = () => {
+        if (!socket) return;
+        if (isGameStarted) return;
+        if (isHost === null) return;
+
+        return (<Switch room={room} socket={socket} isHost={isHost}/>)
+    }
+
+    const GetPlayerList = () => {
+        if (!socket) return;
+        if (isGameStarted) return;
+        return (<PlayerList socket={socket}/>)
+    }
+
     return (
         <>
             <HomeLink/>
@@ -118,8 +133,8 @@ function Lobby({room}) {
             {GetStartButton()}
             {GetRoomElements()}
             {GetPostGameWindow()}
-            {isHost != null && <Switch room={room} socket={socket} isHost={isHost}/>}
-            {socket && <PlayerList socket={socket}/>}
+            {GetSwitch()}
+            {GetPlayerList()}
         </>
     );
 }

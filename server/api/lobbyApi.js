@@ -1,13 +1,11 @@
 import express from 'express';
-import {addPlayerToLobby, createLobby, getLobbyById} from '../firebase/LobbiesDTO.js';
+import {addPlayerToLobby, createLobby, getAllPublicLobbies, getLobbyById} from '../firebase/LobbiesDTO.js';
 import randomstring from 'randomstring';
 
 const router = express.Router();
 
 router.post('/api/lobbies', async (req, res) => {
-    const host = req.body.host.host
-    console.log(host);
-    const token = req.headers.authorization;
+    const host = req.body.host.host;
     const room = randomstring.generate({
         length: 6,
         charset: 'alphanumeric',
@@ -26,7 +24,6 @@ router.post('/api/lobbies', async (req, res) => {
 router.put('/api/lobbies/:room', async (req, res) => {
     const room = req.params.room;
     const { player } = req.body;
-    const token = req.headers.authorization;
 
     try {
         await addPlayerToLobby(room, player);
@@ -39,12 +36,21 @@ router.put('/api/lobbies/:room', async (req, res) => {
 
 router.get('/api/lobbies/:room', async (req, res) => {
     const room = req.params.room;
-    const { player } = req.body;
-    const token = req.headers.authorization;
 
     try {
         const data = await getLobbyById(room);
         res.status(200).send(JSON.stringify(data));
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Something went wrong!');
+    }
+});
+
+router.get('/api/lobbies', async (req, res) => {
+
+    try {
+        const data = await getAllPublicLobbies();
+        res.status(200).send(JSON.stringify({lobbies: data}));
     } catch (error) {
         console.error(error);
         res.status(500).send('Something went wrong!');

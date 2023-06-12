@@ -1,6 +1,41 @@
 import {collection, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc} from 'firebase/firestore';
 import {firestore} from "./fireBaseConfig.js";
 
+export async function getAllPublicLobbies() {
+    const lobbiesRef = collection(firestore, 'lobbies');
+    const lobbiesData = await getDocs(lobbiesRef);
+
+    const returnValue = [];
+
+    console.log(lobbiesData.docs.length)
+
+    for (const doc of lobbiesData.docs) {
+        if (!doc.data().isPublic) continue;
+        if (doc.data().started) continue;
+
+        const playersRef = collection(firestore, 'lobbies', doc.id, 'players');
+        const playersData = await getDocs(playersRef);
+
+        let host = null;
+
+        playersData.forEach(document => {
+            if (document.id === doc.data().host) {
+                host = document.data().name;
+            }
+        });
+
+        returnValue.push({
+            capacity: doc.data().lobbySize,
+            players: playersData.docs.length,
+            id: doc.id,
+            host: host
+        });
+    }
+
+    console.log('returning...');
+    return returnValue;
+}
+
 export async function getLobbyById(lobbyId) {
     const lobbyRef = doc(firestore, 'lobbies', lobbyId);
     const lobbyData = await getDoc(lobbyRef);
@@ -34,14 +69,12 @@ export async function createLobby(room, host) {
     const data = {
         host: host.id,
         started: false,
-        isPublic: false
+        isPublic: false,
+        lobbySize: 8
     };
 
-    console.log(data);
-    console.log(host);
-
     await setDoc(lobbyRef, data);
-    await setDoc(doc(playersRef, host.id), {name: host.name});
+    // await setDoc(doc(playersRef, host.id), {name: host.name});
 }
 
 export async function addPlayerToLobby(lobbyId, player) {
@@ -53,14 +86,15 @@ export async function addPlayerToLobby(lobbyId, player) {
     }
 
     if (lobbyData.data().started) {
-        throw new Error(`Lobby with id ${lobbyId} already started`)
-    }
-
-    if (lobbyData.data().host === player.id) {
-        return 0;
+        throw new Error(`Lobby with id ${lobbyId} already started`);
     }
 
     const playerRef = doc(firestore, "lobbies", lobbyId, "players", player.id);
+    const playerData = await getDoc(playerRef);
+
+    if (playerData.exists()) {
+        throw new Error(`You already joined this lobby`);
+    }
 
     const newPlayerData = {
         name: player.name,
@@ -126,22 +160,6 @@ export async function getHost(room) {
     } else {
         return null;
     }
-}
-
-export async function playerReady(room) {
-    const lobbyRef = doc(firestore, 'lobbies', room);
-    const lobbyData = await getDoc(lobbyRef);
-
-    if (!lobbyData.exists()) {
-        return null;
-    }
-
-    const updatedPlayersNotReady = lobbyData.data().playersNotReady - 1;
-
-    await updateDoc(lobbyRef, {playersNotReady: updatedPlayersNotReady});
-
-    return updatedPlayersNotReady === 0;
-
 }
 
 export async function updateLobby(room, update) {

@@ -9,30 +9,36 @@ const restricted = (Component) => {
         const router = useRouter();
 
         useEffect(() => {
-            const fetchData = async () => {
-                const player = {
-                    id: auth.currentUser.uid,
-                    name: auth.currentUser.displayName
-                }
-                const response = await fetch('/api/join', {
-                    method: 'PUT',
-                    body: JSON.stringify({room: props.room, player}),
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + auth.currentUser.accessToken
-                    }
-                });
-                const status = response.status;
-
+            try {
+                fetchData().then();
+            } catch (e) {
                 setLoading(false);
-                if (status !== 204) {
-                    const {error} = await response.json();
-                    setError(error)
-                }
-            };
+                setError(e);
+            }
 
-            fetchData().then();
         }, []);
+
+        const fetchData = async () => {
+            const player = {
+                id: auth.currentUser.uid,
+                name: auth.currentUser.displayName
+            }
+            const response = await fetch('/api/join', {
+                method: 'PUT',
+                body: JSON.stringify({room: props.room, player}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + auth.currentUser.accessToken
+                }
+            });
+            const status = response.status;
+
+            setLoading(false);
+            if (status !== 204) {
+                const {error} = await response.json();
+                setError(error)
+            }
+        };
 
         if (loading) {
             return <div>Loading...</div>;

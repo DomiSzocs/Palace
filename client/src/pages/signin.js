@@ -31,8 +31,12 @@ function SignIn(props) {
     }
 
     return (
-        <div className="App">
-            <button onClick={signIn}>Sign In</button>
+        <div className="SinIn">
+            <label id="signInLabel">Sign In</label>
+            <button onClick={signIn}>
+                <img src="https://icon-library.com/images/google-login-icon/google-login-icon-24.jpg" alt={"loginIcon"}/>
+                <label>Sign In With Google</label>
+            </button>
         </div>
     );
 }

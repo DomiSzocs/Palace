@@ -3,6 +3,7 @@ import {authenticated} from "@/components/Authenticated";
 import SortedList from "@/components/SortedList";
 import {auth} from "@/firebase/fireBaseConfig";
 import {useRouter} from "next/router";
+import HomeLink from "@/components/HomeLink";
 
 function Leaderboards() {
 
@@ -32,7 +33,12 @@ function Leaderboards() {
 
     return (
         <>
-            {users && <SortedList list={users}/>}
+            <HomeLink/>
+            <label id="leaderboardsLabel">Leaderboards</label>
+            <div id="leaderBoard">
+                {users && <SortedList list={users}/>}
+            </div>
+
         </>
     );
 }

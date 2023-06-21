@@ -12,10 +12,11 @@ function Join() {
     return (
         <>
             <HomeLink/>
-            <div>
+            <div id={"joinPanel"}>
+                <h1 id="joinHint">Enter the room code</h1>
                 <input type='text' value={room} onChange={(e) => setRoom(e.target.value)}/>
                 <Link href={`/lobbies/${room}`}>Join</Link>
-                {error && <div>{error}</div>}
+                {error && <div id="error">{error}</div>}
             </div>
         </>
     );

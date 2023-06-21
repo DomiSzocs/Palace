@@ -131,13 +131,22 @@
 }
 
 .nameTag {
-  color: #339619;
+  color: wheat;
   position: absolute;
   z-index: 3;
   top: 80%;
   width: 100%;
   text-align: center;
 }
+
+[id='2'] .nameTag,
+[id='3'] .nameTag,
+[id='4'] .nameTag,
+[id='5'] .nameTag,
+[id='6'] .nameTag {
+  transform: rotate(180deg);
+}
+
 
 .faceDown .card:nth-child(n),
 .faceUp .card:nth-child(n){

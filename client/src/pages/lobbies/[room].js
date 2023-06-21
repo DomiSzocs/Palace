@@ -51,9 +51,11 @@ function Lobby({room}) {
         });
 
         router.events.on('routeChangeStart', () => {
-            const user = auth.currentUser.uid;
-            localSocket.emit('disconnecting...', {user, room})
-            localSocket.close();
+            if (auth.currentUser) {
+                const user = auth.currentUser.uid;
+                localSocket.emit('disconnecting...', {user, room})
+                localSocket.close();
+            }
             return true;
         });
     }, []);

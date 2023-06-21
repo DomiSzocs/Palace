@@ -1,4 +1,3 @@
-import {useEffect} from "react";
 import {useRouter} from "next/router";
 import SortedList from "@/components/SortedList";
 
@@ -17,8 +16,7 @@ function PostGameWindow({stats}) {
                     <SortedList list={stats}/>
                 </div>
                 <div>
-                    <button>Back To Lobby</button>
-                    <button onClick={backToMain}>Back Main Menu</button>
+                    <button onClick={backToMain}>Back To Main Menu</button>
                 </div>
             </div>
         </div>

@@ -15,7 +15,7 @@ const SignOut = () => {
         return <p>Loading...</p>;
     }
     return (
-        <div className="App">
+        <div className="SignOut">
             <button onClick={async () => await signOut()}>Sign out</button>
         </div>
     );

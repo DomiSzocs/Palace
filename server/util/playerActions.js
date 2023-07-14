@@ -1,4 +1,4 @@
-import {getGameStateById, getLobbyById, updateGameState} from '../firebase/lobbiesDAO.js'
+import {getGameStateById, updateGameState} from "../firebase/gameStatesDAO.js";
 
 export const swapCards = async (room, state) => {
     const gameState = await getGameStateById(room);

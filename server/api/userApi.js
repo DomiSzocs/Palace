@@ -1,5 +1,5 @@
 import express from 'express';
-import {getUsers} from "../firebase/UsersDTO.js";
+import {getUsers} from "../firebase/usersDAO.js";
 
 const router = express.Router();
 

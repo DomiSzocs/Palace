@@ -1,5 +1,5 @@
 import express from 'express';
-import {addPlayerToLobby, createLobby, getAllPublicLobbies, getLobbyById} from '../firebase/LobbiesDTO.js';
+import {addPlayerToLobby, createLobby, getAllPublicLobbies, getLobbyById} from '../firebase/lobbiesDAO.js';
 import randomstring from 'randomstring';
 
 const router = express.Router();

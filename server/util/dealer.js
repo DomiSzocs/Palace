@@ -19,7 +19,7 @@ export default class Dealer {
         const players = []
         this.players.forEach((player) => {
             const dealt = this.dealToPlayer(this.deck);
-            dealt.uid = player;
+            dealt.info = player;
             players.push(dealt);
         });
         return players;

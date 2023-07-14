@@ -4,12 +4,14 @@ export const verifyToken = async (req, resp, next) => {
 
     try {
         const token = req.headers.authorization.split(' ')[1];
+        console.log(token.length);
         const decodedValue = await admin.auth().verifyIdToken(token);
         if (decodedValue) {
             return next();
         }
         resp.status(401).send("Invalid token");
     } catch (error) {
-        resp.status(500).send("Invalid token");
+        console.log('get tokened!');
+        resp.status(401).send("Invalid token");
     }
 }

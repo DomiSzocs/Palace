@@ -26,22 +26,6 @@ export default class Dealer {
     };
 }
 
-// const createDrawPile = (deck) => {
-//     const drawPile = document.getElementById("drawPile");
-//     deck.cards.forEach((card) => {
-//         const cardHtml = card.getSide(false);
-//         cardHtml.style.top = '40%';
-//         cardHtml.style.left = '50%';
-//         drawPile.appendChild(cardHtml);
-//     })
-// };
-
 const dealThree = (deck) => {
     return deck.cards.splice(-3);
 }
-
-// const getConfig = async () => {
-//     const response = await fetch('/api/config');
-//     const {config} = await response.json();
-//     return await JSON.parse(config);
-// }

@@ -5,10 +5,6 @@ export default class Deck {
         this.cards = createDeck(numberOfDecks);
     }
 
-    // getTopCard = () => {
-    //     return this.cards[this.cards.length - 1];
-    // }
-
     shuffle = () => { //Durstenfeld
         for (let i = this.cards.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -17,10 +13,6 @@ export default class Deck {
             this.cards[j] = temp;
         }
     }
-
-    // sort = () => {
-    //     this.cards.sort((a, b) => (a.rank < b.rank) ? 1 : -1);
-    // }
 }
 
 const createDeck = (numberOfDecks) => {

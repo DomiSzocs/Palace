@@ -3,49 +3,16 @@ export default class Card {
         this.suit = suit;
         this.rank = rank;
     }
-
-    // getSide = (side) => {
-    //     if (side) {
-    //         return this.getFace()
-    //     }
-    //     return this.getBack();
-    // }
-    //
-    // color = () => {
-    //     if (this.rank === "2" || this.rank === "10" || this.rank === "JOKER") {
-    //         return "gold";
-    //     }
-    //     return (this.suit === "♥" || this.suit === "♦") ? "red" : "black";
-    // }
-    //
-    // getData = () => {
-    //     if(this.rank === "JOKER") {
-    //         return this.rank;
-    //     }
-    //     return `${this.rank}\n${this.suit}`;
-    // }
-    //
-    // getBack = () => {
-    //     const cardDiv = document.createElement("div");
-    //     cardDiv.classList.add("card");
-    //     cardDiv.classList.add("back");
-    //     return cardDiv;
-    // }
-    //
-    // getFace = () =>  {
-    //     const suitDiv = document.createElement("div");
-    //     suitDiv.classList.add("suit")
-    //     suitDiv.innerHTML = this.suit;
-    //
-    //     const cardDiv = document.createElement("div");
-    //     cardDiv.classList.add("card");
-    //     cardDiv.classList.add(this.color());
-    //     cardDiv.classList.add("face");
-    //     cardDiv.dataset.value = this.getData();
-    //
-    //     cardDiv.appendChild(suitDiv);
-    //     return cardDiv;
-    // }
 }
 
+export const getCardsValues = () => {
+    return {'3': 0, '4': 1, '5': 2, '6': 3, '7': 4, '8': 5, '9': 6,
+        'J': 7, 'Q': 8,'K': 9, 'A': 10, '2': 11, '10': 12, 'JOKER': 13};
+}
 
+export const cardToObject = (card) => {
+    return {
+        suit: card.suit,
+        rank: card.rank
+    };
+};

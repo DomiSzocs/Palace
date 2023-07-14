@@ -91,7 +91,6 @@ function GameWindow({socket, room}) {
         if (!chosenFromFaceUp.current.length) return;
 
         const req = {
-            action: 'swap',
             serverIndex: players.current[uid.current].serverIndex,
             uid: uid.current,
             hand: chosenFromHand.current[0],
@@ -99,7 +98,7 @@ function GameWindow({socket, room}) {
             room
         };
 
-        socket.emit('playerAction', req);
+        socket.emit('swap', req);
         chosenFromFaceUp.current = [];
         chosenFromHand.current = [];
     };

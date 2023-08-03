@@ -1,4 +1,4 @@
-import React, {useEffect, useId, useRef} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {
     renderPlayerInfo,
     renderStartingState,
@@ -15,7 +15,6 @@ import {
 import {removeMarks} from "@/util/userInteractions";
 
 function GameWindow({socket, room}) {
-    let inited = useRef(false);
     const chosenFromHand = useRef([]);
     const chosenFromFaceUp = useRef([]);
     const players = useRef({});
@@ -24,8 +23,6 @@ function GameWindow({socket, room}) {
     const roundHandlers = useRef(null);
 
     useEffect(() => {
-        if (inited.current) return;
-
         socket.on('startingState', (state) => {
             renderStartingState(state, players);
             renderPlayerInfo(state.players, players);
@@ -34,6 +31,8 @@ function GameWindow({socket, room}) {
 
         socket.on('updateHand', ({player, hand}) => {
             const playerNumber = players.current[player].localIndex;
+            chosenFromHand.current = [];
+            chosenFromFaceUp.current = [];
             reRenderHand(playerNumber, hand);
         })
 
@@ -75,6 +74,9 @@ function GameWindow({socket, room}) {
         });
 
         socket.on('sortedHand', ({hand, isCurrentPlayer}) => {
+            chosenFromHand.current = [];
+            chosenFromFaceUp.current = [];
+
             reRenderLocalPlayerHand(hand);
 
             if (isCurrentPlayer) {
@@ -83,7 +85,16 @@ function GameWindow({socket, room}) {
             }
         });
 
-        inited.current = true;
+        return () => {
+            socket.off('startingState');
+            socket.off('updateHand');
+            socket.off('nextPlayer');
+            socket.off('updateCentralPile');
+            socket.off('updateDrawingPile');
+            socket.off('finished');
+            socket.off('sortedHand');
+        }
+
     }, []);
 
     const swap = () => {

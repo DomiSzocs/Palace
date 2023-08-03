@@ -105,7 +105,9 @@ export async function addPlayerToLobby(room, player) {
         throw new LobbyAlreadyStartedError(`Lobby with id ${room} already started`);
     }
 
-    if (player.id in lobbyData.players) {
+    const alreadyJoined = lobbyData.players.some((joinedPlayer) => joinedPlayer.uid === player.id)
+
+    if (alreadyJoined) {
         throw new AlreadyJoinedError(`You already joined this lobby`)
     }
 
@@ -134,5 +136,12 @@ export async function deletePlayerFromLobby(room, uid) {
         lobbyData.host = null;
     }
     delete lobbyData.players[uid];
+
+    if (lobbyData === {}) {
+        await deleteLobby(room);
+        await deleteGameState(room);
+        return;
+    }
+
     await updateLobby(room, lobbyData);
 }

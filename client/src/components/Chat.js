@@ -1,33 +1,40 @@
 import React, {useEffect, useRef, useState} from 'react';
+import {auth} from "@/firebase/fireBaseConfig";
 
 function Chat({socket, room}) {
     const [chat, setChat] = useState("");
     const chatWindow = useRef();
     const inputField = useRef();
-    const joined = useRef(false);
+    const playerName = useRef(auth.currentUser.displayName);
 
     useEffect(() => {
-        if (joined.current) return;
         socket.on('receive', (data) => {
-            console.log("Received message:", data.message);
-            setChat((prevChat) => prevChat +  data.message + '\n');
+            setChat((prevChat) => prevChat + data.message);
         });
-        joined.current = true;
+
+        return () => {
+            socket.off('receive');
+        }
     }, []);
 
     useEffect(() => {
-        console.log("Chat changed:", chat);
         if (chatWindow.current) {
             chatWindow.current.value = chat;
         }
     }, [chat]);
 
-    const send = () => {
+    const send = (e) => {
+        e.preventDefault()
+
         if (!socket) return;
         const message = inputField.current.value;
         if (!message) return;
-        socket.emit('send', { message, room });
+
+        const chatEntry = `${playerName.current}: ${message}\n`;
+
+        socket.emit('send', { message: chatEntry, room });
         inputField.current.value = '';
+        scrollDown();
     }
 
     const expandChatWindow = () => {
@@ -35,16 +42,23 @@ function Chat({socket, room}) {
     }
     const resetChatWindow = () => {
         chatWindow.current.rows = 2;
+        scrollDown()
+    }
+
+    const scrollDown = () => {
+        chatWindow.current.scrollTop = chatWindow.current.scrollHeight;
     }
 
     return (
         <>
             <textarea ref={chatWindow} disabled={true} rows="2" cols="30" />
             <br/>
-            <span onFocus={expandChatWindow} onBlur={resetChatWindow}>
-                <input ref={inputField} type='text' />
-            </span>
-            <button onClick={send}>{"↵"}</button>
+            <form onSubmit={send}>
+                <span onFocus={expandChatWindow} onBlur={resetChatWindow}>
+                 <input ref={inputField} type='text' />
+                </span>
+                <input type="submit" value={"↵"} onClick={send}/>
+            </form>
         </>
     );
 }

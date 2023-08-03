@@ -3,6 +3,9 @@ import {onSend} from "./handlers/chatActions.js";
 import {onGameStart, onReady, onSwap} from "./handlers/preGameActions.js";
 import {onPlayCards, onSortHand, onTakeCentralPile, onTryCard} from "./handlers/playerActions.js";
 import {onGetVisibility, onSetVisibility} from "./visibilityActions.js";
+import {broadcastIntoRoomWithEvent} from "./broadcastEvent.js";
+import {getLobbyById, updateLobby} from "../firebase/lobbiesDAO.js";
+import {deleteGameState} from "../firebase/gameStatesDAO.js";
 
 export const initializeListeners = (socket) => {
     socket.on('join',({room}) => onJoin(room, socket));
@@ -31,4 +34,24 @@ export const initializeListeners = (socket) => {
     socket.on('setVisibility', async ({room, state}) => onSetVisibility(room, state, socket));
 
     socket.on('getSwitchState', async ({room}) => onGetVisibility(room, socket));
+
+    socket.on('restartLobby', async (room) => {
+        const lobbyData = await getLobbyById(room);
+
+        lobbyData.started = false;
+        await updateLobby(room, lobbyData);
+
+        await deleteGameState(room);
+
+        broadcastIntoRoomWithEvent(socket, room, 'newLobby', null);
+        broadcastIntoRoomWithEvent(socket, room, 'playerList', lobbyData.players);
+    });
+
+    socket.on('getPlayers', async (room) => {
+        const lobbyData = await getLobbyById(room);
+
+        if (!lobbyData) return;
+
+        socket.emit('playerList', lobbyData.players);
+    })
 }

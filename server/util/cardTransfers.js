@@ -49,7 +49,7 @@ export const addCardsToPlayerHand = (hand, cards) => {
     return newPlayerHand;
 }
 
-const isPlayable = (card, topCard) => {
+export const isPlayable = (card, topCard) => {
     const cardValues = getCardsValues();
 
     return !topCard.length || topCard[0].rank === '2' || cardValues[card.rank] >= cardValues[topCard[0].rank];

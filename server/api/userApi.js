@@ -4,8 +4,6 @@ import {getUsers} from "../firebase/usersDAO.js";
 const router = express.Router();
 
 router.get('/api/users', async (req, res) => {
-    const token = req.headers.authorization;
-
     try {
         const data = await getUsers();
         res.status(200).send(JSON.stringify(data));

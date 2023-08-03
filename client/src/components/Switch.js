@@ -1,12 +1,7 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect} from 'react';
 
 function Switch({socket, room, isHost}) {
-
-    const initialized = useRef(false);
-
     useEffect(() => {
-        if (initialized.current) return;
-
         const toggle = document.getElementById("switch").children[0];
 
         socket.emit('getSwitchState', {room});
@@ -20,7 +15,10 @@ function Switch({socket, room, isHost}) {
             toggle.disabled = true;
         }
 
-        initialized.current = true;
+        return () => {
+            socket.off('setSwitch');
+        }
+
     }, []);
 
     const setVisibility = (element) => {

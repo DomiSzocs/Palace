@@ -12,57 +12,62 @@ import Switch from "@/components/Switch";
 import PlayerList from "@/components/PlayerList";
 
 function Lobby({room}) {
-    const [socket, setSocket] = useState(null);
     const [isGameStarted, setIsGameStarted] = useState(false);
     const [isHost, setIsHost] = useState(null);
     const [endOfGameStats, setEndOfGameStats] = useState(null);
-    const isSocketInitialized = useRef(false);
+    const socket = useRef(null);
     const router = useRouter();
 
     useEffect(() => {
-        console.log(`in lobby ${room}`);
-        if (isSocketInitialized.current) return;
-        const localSocket = io(process.env.NEXT_PUBLIC_GAME_SERVER, {
+        socket.current = io(process.env.NEXT_PUBLIC_GAME_SERVER, {
             query: { uid: auth.currentUser.uid }
         });
-        setSocket(localSocket);
-        isSocketInitialized.current = true;
 
-        localSocket.emit('join', {user: auth.currentUser.uid, room});
+        socket.current.emit('join', {user: auth.currentUser.uid, room});
 
-        localSocket.emit('amIHost', {user: auth.currentUser.uid, room});
+        socket.current.emit('amIHost', {user: auth.currentUser.uid, room});
 
-        localSocket.on('host_disconnected', () => {
+        socket.current.on('host_disconnected', () => {
             console.log("no host");
             router.replace('/').then(() => null);
         });
 
-        localSocket.on('amIHostAnswer', (answer) => {
+        socket.current.on('amIHostAnswer', (answer) => {
             console.log(answer);
             setIsHost(answer);
         });
 
-        localSocket.on('starting...', () => {
+        socket.current.on('starting...', () => {
             setIsGameStarted(true);
         });
 
-        localSocket.on('gameOver', (points) => {
+        socket.current.on('gameOver', (points) => {
             setEndOfGameStats(points);
         });
 
-        router.events.on('routeChangeStart', () => {
-            if (auth.currentUser) {
-                const user = auth.currentUser.uid;
-                localSocket.emit('disconnecting...', {user, room})
-                localSocket.close();
-            }
-            return true;
-        });
+        socket.current.on('newLobby', () => {
+            setIsGameStarted(false);
+            setEndOfGameStats(null);
+        })
+
+        return () => {
+            socket.current.off('host_disconnected');
+            socket.current.off('amIHostAnswer');
+            socket.current.off('starting...');
+            socket.current.off('gameOver');
+            socket.current.off('newLobby');
+
+            const user = auth.currentUser.uid;
+            socket.current.emit('disconnecting...', {user, room})
+            socket.current.disconnect();
+            socket.current = null;
+        }
+
     }, []);
 
     const emitGameStart = () => {
-        if (!socket) return;
-        socket.emit('gameStart', {room});
+        if (!socket.current) return;
+        socket.current.emit('gameStart', {room});
     };
 
     const copyRoom = ({target}) => {
@@ -89,42 +94,43 @@ function Lobby({room}) {
     };
 
     const GetChat = () => {
-        if (!socket) return;
+        if (!socket.current) return;
 
         return (
             <>
                 <div className='chat'>
-                    {socket && <Chat socket={socket} room={room}/>}
+                    <Chat socket={socket.current} room={room}/>
                 </div>
             </>
         );
     };
 
     const GetGameWindow = () => {
-        if (!socket) return;
+        if (!socket.current) return;
         if (!isGameStarted) return;
 
-        return <GameWindow socket={socket} room={room}/>;
+        return <GameWindow socket={socket.current} room={room}/>;
     };
 
     const GetPostGameWindow = () => {
         if (!endOfGameStats) return;
+        if (!isGameStarted) return;
 
-        return <PostGameWindow stats={endOfGameStats}/>
+        return <PostGameWindow stats={endOfGameStats} isHost={isHost} socket={socket.current} room={room}/>
     }
 
     const GetSwitch = () => {
-        if (!socket) return;
+        if (!socket.current) return;
         if (isGameStarted) return;
         if (isHost === null) return;
 
-        return (<Switch room={room} socket={socket} isHost={isHost}/>)
+        return <Switch room={room} socket={socket.current} isHost={isHost}/>
     }
 
     const GetPlayerList = () => {
-        if (!socket) return;
+        if (!socket.current) return;
         if (isGameStarted) return;
-        return (<PlayerList socket={socket}/>)
+        return <PlayerList socket={socket.current} room={room}/>
     }
 
     return (

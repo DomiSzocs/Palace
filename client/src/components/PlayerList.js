@@ -1,14 +1,12 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
-function PlayerList({socket}) {
+function PlayerList({socket, room}) {
     const [players, setPlayers] = useState([]);
 
-    const initialized = useRef(false);
-
     useEffect(() => {
-        if (initialized.current) return;
+        socket.emit('getPlayers', room);
 
-        socket.on('joined', (players) => {
+        socket.on('playerList', (players) => {
             console.log(players);
             setPlayers(players);
         });
@@ -19,9 +17,11 @@ function PlayerList({socket}) {
             );
         });
 
-        initialized.current = true;
+        return () => {
+            socket.off('joined');
+            socket.off('playerLeft')
+        }
     }, []);
-
 
     return (
         <div id="playerDiv">

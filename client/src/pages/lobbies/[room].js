@@ -28,12 +28,10 @@ function Lobby({room}) {
         socket.current.emit('amIHost', {user: auth.currentUser.uid, room});
 
         socket.current.on('host_disconnected', () => {
-            console.log("no host");
             router.replace('/').then(() => null);
         });
 
         socket.current.on('amIHostAnswer', (answer) => {
-            console.log(answer);
             setIsHost(answer);
         });
 

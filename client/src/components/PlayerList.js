@@ -7,7 +7,6 @@ function PlayerList({socket, room}) {
         socket.emit('getPlayers', room);
 
         socket.on('playerList', (players) => {
-            console.log(players);
             setPlayers(players);
         });
 

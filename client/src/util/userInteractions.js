@@ -2,9 +2,6 @@ export const chooseACard = (card, parent, container) => {
     const cards = Array.from(parent.children);
     const clicked = cards.indexOf(card);
 
-    console.log(cards);
-    console.log(container);
-
     if (cards.length > 3) {
         return;
     }
@@ -30,21 +27,18 @@ export const addCard = (card, parent, container) => {
     if (index !== -1) {
         unmark(card);
         container.current.splice(index, 1);
-        console.log(container.current);
         return;
     }
 
     if (!container.current.length) {
         container.current.push({rank, index: clicked});
         mark(card);
-        console.log(container.current);
         return;
     }
 
     if (container.current[0].rank === rank) {
         container.current.push({rank, index: clicked});
         mark(card);
-        console.log(container.current);
     }
 }
 

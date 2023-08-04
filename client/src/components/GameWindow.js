@@ -1,18 +1,24 @@
 import React, {useEffect, useRef} from 'react';
+import {auth} from "@/firebase/fireBaseConfig";
+import {removeMarks} from "@/util/userInteractions";
 import {
     renderPlayerInfo,
     renderStartingState,
     reRenderHand,
     updateCentralPile,
-    updateCurrent, setDrawingPile, renderFinishedText, reRenderLocalPlayerHand
+    updateCurrent,
+    setDrawingPile,
+    renderFinishedText,
+    reRenderLocalPlayerHand
 } from "@/util/render";
-import {auth} from "@/firebase/fireBaseConfig";
 import {
-    addListenersForSwapPhase, getRoundHandlers,
-    getSwapHandler, removeHandler,
-    removeSwapPhaseEventListeners, setRoundEventListeners, useHandler
+    addListenersForSwapPhase,
+    getRoundHandlers,
+    getSwapHandler,
+    removeSwapPhaseEventListeners,
+    setRoundEventListeners,
+    useHandler
 } from "@/util/eventListeners";
-import {removeMarks} from "@/util/userInteractions";
 
 function GameWindow({socket, room}) {
     const chosenFromHand = useRef([]);
@@ -125,7 +131,6 @@ function GameWindow({socket, room}) {
     }
 
     const playCards = () => {
-        console.log('play');
         const req = {};
         if (chosenFromHand.current.length) {
             req.cards = chosenFromHand.current.map(card => card.index);
@@ -139,7 +144,6 @@ function GameWindow({socket, room}) {
         req.player = players.current[uid.current].serverIndex;
         req.room = room;
         socket.emit('playCards', req);
-        console.log(req.cards);
     }
 
     const sortHand = () => {

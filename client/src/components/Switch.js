@@ -7,7 +7,6 @@ function Switch({socket, room, isHost}) {
         socket.emit('getSwitchState', {room});
 
         socket.on('setSwitch', (state) => {
-            console.log(state);
             toggle.checked = state;
         });
 

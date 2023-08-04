@@ -14,12 +14,6 @@ export const addListenersForSwapPhase = (handler) => {
 export const removeSwapPhaseEventListeners = (handler) => {
     const hand = document.getElementById('localPlayerHand');
     const faceUp = document.getElementById('0').children[1];
-    // Array.from(hand.children).forEach((card) => {
-    //     card.removeEventListener('mousedown', handler);
-    // });
-    // Array.from(faceUp.children).forEach((card) => {
-    //     card.removeEventListener('mousedown', handler);
-    // });
 
     hand.removeEventListener('mousedown', handler);
     faceUp.removeEventListener('mousedown', handler);
@@ -111,15 +105,6 @@ export const useHandler = (parent, handler) => {
     Array.from(parent.children).forEach((card) => {
         card.addEventListener('mousedown', handler);
         card.classList.add('clickable');
-    });
-
-    return parent.children.length !== 0;
-}
-
-export const removeHandler = (parent, handler) => {
-    Array.from(parent.children).forEach((card) => {
-        card.removeEventListener('mousedown', handler);
-        card.classList.remove('clickable');
     });
 
     return parent.children.length !== 0;

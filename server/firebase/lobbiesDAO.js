@@ -135,7 +135,8 @@ export async function deletePlayerFromLobby(room, uid) {
         }
         lobbyData.host = null;
     }
-    delete lobbyData.players[uid];
+
+    lobbyData.players = lobbyData.players.filter(player => player.uid !== uid);
 
     if (lobbyData === {}) {
         await deleteLobby(room);

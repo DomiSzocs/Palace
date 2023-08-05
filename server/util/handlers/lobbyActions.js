@@ -18,7 +18,8 @@ export const onHostCheck = async (user, room, socket) => {
 export const onDisconnect = async (user, room, socket) => {
     try {
         await deletePlayerFromLobby(room, user);
-        await deletePlayerFromGameState(room, user)
+        await deletePlayerFromGameState(room, user);
+        broadcastIntoRoomWithEvent(socket, room, 'playerLeft', user);
     } catch (error) {
         if (error instanceof HostLeftError) {
             broadcastIntoRoomWithEvent(socket, room, 'host_disconnected', null);

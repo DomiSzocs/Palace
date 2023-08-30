@@ -5,15 +5,19 @@ function SortedList({list}) {
         return a.points > b.points ? -1 : 1;
     });
     return (
-        <ol>
-            {
-                list.map((listItem) => {
-                    return (
-                        <li key={listItem.uid}>{`${listItem.name}: ${listItem.points}`}</li>
-                    )
-                })
-            }
-        </ol>
+        <div className='list-container'>
+            <div className='list-scrollable'>
+                <ol>
+                    {
+                        list.map((listItem) => {
+                            return (
+                                <li key={listItem.uid}>{`${listItem.name}: ${listItem.points}`}</li>
+                            )
+                        })
+                    }
+                </ol>
+            </div>
+        </div>
     );
 }
 

@@ -15,7 +15,7 @@ function PostGameWindow({stats, isHost, socket, room}) {
     return (
         <div id="postGameContainer">
             <div id="postGameWindow">
-                <div>
+                <div className='post-game-list-container'>
                     <SortedList list={stats}/>
                 </div>
                 <div>

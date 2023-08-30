@@ -5,7 +5,7 @@ import {auth} from "@/firebase/fireBaseConfig";
 import {useRouter} from "next/router";
 import HomeLink from "@/components/HomeLink";
 
-function Leaderboards() {
+function Leaderboard() {
 
     const [users, setUsers] = useState(null);
     const router = useRouter();
@@ -34,7 +34,7 @@ function Leaderboards() {
     return (
         <>
             <HomeLink/>
-            <label id="leaderboardsLabel">Leaderboards</label>
+            <label id="leaderboardsLabel">Leaderboard</label>
             <div id="leaderBoard">
                 {users && <SortedList list={users}/>}
             </div>
@@ -43,4 +43,4 @@ function Leaderboards() {
     );
 }
 
-export default authenticated(Leaderboards);
+export default authenticated(Leaderboard);

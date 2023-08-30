@@ -19,11 +19,13 @@ export async function getAllPublicLobbies() {
 
         if (lobbyData.started) return;
 
+        const host = lobbyData.players.find(player => player.uid === lobbyData.host);
+
         returnValue.push({
             capacity: lobbyData.lobbySize,
             players: lobbyData.players.length,
             id: lobby.id,
-            host: lobbyData.host,
+            host: host.name,
         });
     });
 

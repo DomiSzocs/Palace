@@ -36,7 +36,7 @@ function Home() {
                 <Link onClick={createLobby} href={''}>Host A Game</Link>
                 <Link href={'/join'}>Join A Game</Link>
                 <Link href={'/find'}>Find A Game</Link>
-                <Link href={'/leaderboards'}>Leaderboards</Link>
+                <Link href={'/leaderboard'}>Leaderboard</Link>
             </div>
         </div>
     )

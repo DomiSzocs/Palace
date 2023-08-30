@@ -453,11 +453,11 @@ input:checked + .slider {
   padding-top: 10vh;
   top: 10vh;
   left: 33%;
-  overflow: auto;
   width: 33%;
   height: 100vh;
   border-radius: 2vw 2vw 0 0;
   color: wheat;
+  padding-left: 7%;
 }
 
 #leaderboardsLabel {
@@ -499,9 +499,31 @@ input:checked + .slider {
 
 #signInLabel {
   top: 20vh;
-  left: 42%;
+  left: 38%;
   position: fixed;
   font-size: 3vw;
   height: 5vh;
+  width: auto;
 }
 
+.list-container {
+  height: 100%;
+  width: 75%;
+  overflow: hidden;
+}
+
+.list-scrollable {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  padding-right: 17px;
+}
+
+.list-scrollable::-webkit-scrollbar {
+  width: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.list-scrollable::-webkit-scrollbar-thumb {
+  background-color: rgb(173, 216, 230);
+}

@@ -24,7 +24,6 @@ router.post('/api/lobbies', async (req, res) => {
 router.put('/api/lobbies/:room', async (req, res) => {
     const room = req.params.room;
     const { player } = req.body;
-
     try {
         await addPlayerToLobby(room, player);
         res.status(204).end();

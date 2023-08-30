@@ -132,7 +132,7 @@ const createHandHtml = (playerNumber) => {
 const renderLocalPlayersHand = (cards) => {
     const handPile = document.createElement('div');
     handPile.id = 'localPlayerHand';
-    const container = document.getElementById('container');
+    const container = document.getElementById('playerHandScrollable');
     container.appendChild(handPile);
     renderPile(cards, true, handPile);
 }

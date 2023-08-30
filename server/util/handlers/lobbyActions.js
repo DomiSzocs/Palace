@@ -7,6 +7,9 @@ import {broadcastIntoRoomWithEvent} from "../broadcastEvent.js";
 export const onJoin = async (room, socket) => {
     socket.join(room);
     const lobbyData = await getLobbyById(room);
+
+    if (!lobbyData) return;
+
     broadcastIntoRoomWithEvent(socket, room, 'playerList', lobbyData.players);
 }
 

@@ -160,6 +160,9 @@ function GameWindow({socket, room}) {
             <div id="centralPile"></div>
             <div id="drawPile"></div>
             <div id="discardPile"></div>
+            <div id="playerHandContainer">
+                <div id="playerHandScrollable"></div>
+            </div>
             <button id="swapButton" onClick={swap} >Swap</button>
             <button id="readyButton" onClick={sendReady}>Ready</button>
             <button id="playButton" onClick={playCards}>Play Cards</button>

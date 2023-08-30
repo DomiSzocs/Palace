@@ -32,7 +32,7 @@ function SignIn(props) {
 
     return (
         <div className="SinIn">
-            <label id="signInLabel">Sign In</label>
+            <label id="signInLabel">Sign In To Palace</label>
             <button onClick={signIn}>
                 <img src="https://icon-library.com/images/google-login-icon/google-login-icon-24.jpg" alt={"loginIcon"}/>
                 <label>Sign In With Google</label>
